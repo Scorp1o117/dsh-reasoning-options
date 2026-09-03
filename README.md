@@ -1,6 +1,6 @@
-# dsh-reasoning-efforts
+# dsh-model-reasoning
 
-**GitHub**: [Scorp1o117/dsh-reasoning-efforts](https://github.com/Scorp1o117/dsh-reasoning-efforts) · **npm**: [dsh-reasoning-efforts](https://www.npmjs.com/package/dsh-reasoning-efforts) · [中文](README.zh.md)
+**GitHub**: [Scorp1o117/dsh-model-reasoning](https://github.com/Scorp1o117/dsh-model-reasoning) · **npm**: [dsh-model-reasoning](https://www.npmjs.com/package/dsh-model-reasoning) · [中文](README.zh.md)
 
 A small DeepSeek Harness plugin that automatically adds a **reasoning-effort picker** to every pi-ai (third-party gateway) model.
 
@@ -15,7 +15,7 @@ This plugin closes the gap by writing the declaration itself: it scans the `llm-
 ## Install
 
 ```powershell
-dsh plugin --profile web add dsh-reasoning-efforts
+dsh plugin --profile web add dsh-model-reasoning
 ```
 
 Or mount manually in a profile patch:
@@ -23,7 +23,7 @@ Or mount manually in a profile patch:
 ```yaml
 - insert:
     - id: reasoning-efforts
-      name: 'dsh-reasoning-efforts'
+      name: 'dsh-model-reasoning'
       config:
         enabled: true
 ```
