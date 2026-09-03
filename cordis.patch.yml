@@ -1,0 +1,8 @@
+# dsh-reasoning-efforts — bundle patch layer
+#
+# Declares the plugin as a Cordis loader entry, making the package a standard
+# profile bundle: `dsh plugin --profile <p> add dsh-reasoning-efforts`
+# installs and mounts it without manual cordis.patch.yml edits.
+- insert:
+    - id: reasoning-efforts
+      name: 'dsh-reasoning-efforts'
