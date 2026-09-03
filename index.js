@@ -29,6 +29,8 @@
 // No settings namespace is owned by this plugin; the `llm-pi-ai` namespace is
 // read + mutated, never owned.
 
+import z from "@deepseek-ai/schemastery";
+
 /** Cordis plugin name. */
 const name = "reasoning-efforts";
 /** Services injected (settings is required; nothing else). */
@@ -59,9 +61,9 @@ const DEFAULT_EFFORTS = {
 };
 
 /** Runtime schema for the reasoning-efforts row. */
-const Config = {
-  enabled: { type: "boolean", default: true },
-};
+const Config = z.object({
+  enabled: z.boolean().default(true),
+});
 
 /** True when a model profile already declares reasoningEfforts. */
 function hasEfforts(model) {
