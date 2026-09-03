@@ -1,4 +1,4 @@
-// dsh-model-reasoning — give every custom pi-ai model a reasoning-effort
+// dsh-reasoning-options — give every custom pi-ai model a reasoning-effort
 // selector.
 //
 // dsh's own DeepSeek adapter advertises reasoning levels for its models, so

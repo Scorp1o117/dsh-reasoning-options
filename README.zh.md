@@ -1,6 +1,6 @@
-# dsh-model-reasoning
+# dsh-reasoning-options
 
-**GitHub**: [Scorp1o117/dsh-model-reasoning](https://github.com/Scorp1o117/dsh-model-reasoning) · **npm**: [dsh-model-reasoning](https://www.npmjs.com/package/dsh-model-reasoning) · [English](README.md)
+**GitHub**: [Scorp1o117/dsh-reasoning-options](https://github.com/Scorp1o117/dsh-reasoning-options) · **npm**: [dsh-reasoning-options](https://www.npmjs.com/package/dsh-reasoning-options) · [English](README.md)
 
 给 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 的 **pi-ai 自定义模型（第三方网关）** 自动补上「推理强度」选择器的小插件。
 
@@ -15,7 +15,7 @@ dsh 自带的 DeepSeek 模型在 Web UI 里有推理强度选项（off / low / h
 ## 安装
 
 ```powershell
-dsh plugin --profile web add dsh-model-reasoning
+dsh plugin --profile web add dsh-reasoning-options
 ```
 
 或手动在 profile patch 挂载：
@@ -23,7 +23,7 @@ dsh plugin --profile web add dsh-model-reasoning
 ```yaml
 - insert:
     - id: reasoning-efforts
-      name: 'dsh-model-reasoning'
+      name: 'dsh-reasoning-options'
       config:
         enabled: true
 ```
