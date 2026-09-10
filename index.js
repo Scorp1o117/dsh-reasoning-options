@@ -64,11 +64,18 @@ const DEFAULT_EFFORTS = {
   max: "max",
 };
 
+/** Default header name for OpenCode session routing. */
+const DEFAULT_SESSION_HEADER = "x-opencode-session";
+/** Default session ID value used when auto-injecting OpenCode session header. */
+const DEFAULT_SESSION_HEADER_VALUE = "dsh-session";
+
 import z from "@deepseek-ai/schemastery";
 
 /** Runtime schema for the reasoning-efforts row. */
 const Config = z.object({
   enabled: z.boolean().default(true),
+  autoSessionHeader: z.boolean().default(true),
+  sessionHeaderValue: z.string().default("dsh-session"),
 });
 
 /** True when a model profile already declares reasoningEfforts. */
@@ -76,19 +83,34 @@ function hasEfforts(model) {
   return model !== null && typeof model === "object" && model.reasoningEfforts !== undefined;
 }
 
+/** True when a provider's baseURL points to an OpenCode endpoint. */
+export function isOpenCode(profile) {
+  const url = String(profile?.baseURL ?? "").toLowerCase();
+  return url.includes("opencode.ai");
+}
+
+/** True when headers already contains an x-opencode-session header (case-insensitive). */
+export function hasSessionHeader(headers) {
+  if (!headers || typeof headers !== "object") return false;
+  return Object.keys(headers).some((k) => k.toLowerCase() === DEFAULT_SESSION_HEADER);
+}
+
 /**
  * Build the next `llm-pi-ai` user section with missing reasoning declarations
- * added. Pure: returns a NEW object (or the SAME reference when nothing would
- * change), never mutates `section`.
+ * and required gateway headers added. Pure: returns a NEW object (or the SAME
+ * reference when nothing would change), never mutates `section`.
  *
  * @param {any} section - the raw USER section (`settings.section("llm-pi-ai")`).
+ * @param {object} [options] - configuration options (autoSessionHeader, sessionHeaderValue).
  * @returns {object|null} the complete next section when a change is needed,
- *   or `null` when everything already declares reasoning.
+ *   or `null` when everything already declares reasoning and headers.
  */
-export function buildPatchedSection(section) {
+export function buildPatchedSection(section, options = {}) {
   if (!section || typeof section !== "object") return null;
   const providers = section.providers;
   if (!providers || typeof providers !== "object") return null;
+  const autoSessionHeader = options.autoSessionHeader ?? true;
+  const sessionHeaderValue = options.sessionHeaderValue ?? DEFAULT_SESSION_HEADER_VALUE;
   let changed = false;
   const nextProviders = {};
   for (const [provider, profile] of Object.entries(providers)) {
@@ -100,6 +122,14 @@ export function buildPatchedSection(section) {
     // Route-level default reasoning level (only when the route sets none).
     if (nextProfile.reasoning === undefined || nextProfile.reasoning === null || nextProfile.reasoning === "") {
       nextProfile.reasoning = DEFAULT_ROUTE_LEVEL;
+      changed = true;
+    }
+    // Auto-inject x-opencode-session header for OpenCode Go gateways where missing.
+    if (autoSessionHeader && isOpenCode(nextProfile) && !hasSessionHeader(nextProfile.headers)) {
+      nextProfile.headers = {
+        ...nextProfile.headers,
+        [DEFAULT_SESSION_HEADER]: sessionHeaderValue,
+      };
       changed = true;
     }
     const models = nextProfile.models;
@@ -123,13 +153,13 @@ export function buildPatchedSection(section) {
  * section, and applies it through settings.update (schema-validated by pi-ai,
  * persisted, committed). No-op when nothing is missing.
  */
-export async function reconcile(settings, logger) {
+export async function reconcile(settings, logger, config = {}) {
   const section = settings.section(TARGET_NS);
-  const next = buildPatchedSection(section);
+  const next = buildPatchedSection(section, config);
   if (next === null) return 0;
   try {
     await settings.update(TARGET_NS, next);
-    logger?.info?.(`[reasoning-efforts] patched reasoning declarations into ${TARGET_NS}`);
+    logger?.info?.(`[reasoning-efforts] patched reasoning / session declarations into ${TARGET_NS}`);
     return 1;
   } catch (error) {
     // A refused write (e.g. pi-ai schema rejection) must not take the plugin
@@ -155,7 +185,7 @@ function apply(ctx, config) {
     // (pi-ai plugin activation order). settings.section returns undefined
     // then; reconcile() no-ops on undefined, and the settings/updated
     // listener below re-runs the pass once llm-pi-ai appears.
-    void reconcile(settings, ctx.logger);
+    void reconcile(settings, ctx.logger, cfg());
   };
 
   // Re-run whenever the target namespace changes (model additions/edits, and
@@ -179,4 +209,4 @@ function apply(ctx, config) {
   setTimeout(tick, 0);
 }
 
-export { Config, apply, inject, name };
+export { Config, apply, inject, name, DEFAULT_SESSION_HEADER, DEFAULT_SESSION_HEADER_VALUE };
