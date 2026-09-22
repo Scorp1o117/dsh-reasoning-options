@@ -13,6 +13,14 @@ This plugin closes both gaps: it scans the `llm-pi-ai` namespace, adds the full 
 
 > The plugin only gives users a convenient way to pick and ensures gateway requirements are satisfied. Which level a model actually supports is the user's call; the plugin does not judge model fitness.
 
+## Compatibility (v0.2.1)
+
+Verified in a DSH `0.1.5-rc.3` (`next`) disposable Web profile; DSH
+`0.1.5-rc.2` remains `latest`. The rc.3 host currently references an
+unpublished `dsh-client-ui-sidebar-documentpreview@0.1.5-rc.3`, so the smoke
+profile temporarily used that unrelated UI package at rc.2. A clean rc.3
+installation is blocked upstream. Alpha releases remain `unknown`.
+
 ## Install
 
 ```powershell

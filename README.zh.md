@@ -13,6 +13,13 @@
 
 > 只负责「给用户一个更方便的选择入口」并保证网关连通性。具体选哪档、模型支不支持，由用户自己决定，插件不判断模型适配度。
 
+## 兼容性（v0.2.1）
+
+已在 DSH `0.1.5-rc.3`（`next`）的一次性 Web Profile 中验证；`0.1.5-rc.2`
+仍是 `latest`。rc.3 宿主目前引用尚未发布的
+`dsh-client-ui-sidebar-documentpreview@0.1.5-rc.3`，烟测仅将这一无关的 UI
+包临时回退为 rc.2；rc.3 原样安装仍受上游阻塞。alpha 版本继续标记 `unknown`。
+
 ## 安装
 
 ```powershell
