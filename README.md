@@ -9,17 +9,15 @@ A small DeepSeek Harness plugin that automatically adds a **reasoning-effort pic
 1. **Reasoning Effort Selection**: dsh's built-in DeepSeek models show a reasoning-effort selector in the Web UI because the DeepSeek adapter declares reasoning capability for them. Models configured through `llm-pi-ai` (OpenCode Go, GOAT, Volcengine Ark, ...) **don't** — pi-ai only offers effort levels for models that explicitly declare `reasoningEfforts`, and hand-declared gateway models never do.
 2. **OpenCode Go Compatibility**: OpenCode Go (`opencode.ai/zen/go/v1`) strictly requires an `x-opencode-session` HTTP header to route requests and manage prompt cache. Without it, requests fail with `400: {"type":"MissingSessionID", ...}`.
 
-This plugin closes both gaps: it scans the `llm-pi-ai` namespace, adds the full level set (off / minimal / low / medium / high / xhigh / max) and default `reasoning: high` to models without declarations, and injects `x-opencode-session` into OpenCode Go provider headers if not already set. Writes go through dsh's native settings pipeline (schema-validated → persisted to settings.yaml → hot-applied) — **no manual file editing**.
+This plugin closes both gaps: it scans the `llm-pi-ai` namespace, adds the full level set (off / minimal / low / medium / high / xhigh / max) and default `reasoning: high` to models without declarations, and injects `x-opencode-session` into OpenCode Go provider headers if not already set. Writes go through DSH's native settings pipeline into the Profile patch.
 
 > The plugin only gives users a convenient way to pick and ensures gateway requirements are satisfied. Which level a model actually supports is the user's call; the plugin does not judge model fitness.
 
-## Compatibility (v0.2.1)
+## Compatibility (v0.2.2)
 
-Verified in a DSH `0.1.5-rc.3` (`next`) disposable Web profile; DSH
-`0.1.5-rc.2` remains `latest`. The rc.3 host currently references an
-unpublished `dsh-client-ui-sidebar-documentpreview@0.1.5-rc.3`, so the smoke
-profile temporarily used that unrelated UI package at rc.2. A clean rc.3
-installation is blocked upstream. Alpha releases remain `unknown`.
+Targets DSH `0.1.7-rc.1` (`next`); npm `latest` is `0.1.5-rc.3`.
+The plugin reads `settings.describe()` and writes the current Profile patch.
+Older hosts require an older plugin release; alpha releases remain `unknown`.
 
 ## Install
 
@@ -44,7 +42,7 @@ Or mount manually in a profile patch:
 3. For provider routes without a `reasoning` default, add `reasoning: high`.
 4. For OpenCode Go providers (`baseURL` containing `opencode.ai`), auto-inject `x-opencode-session: dsh-session` into `headers` if missing.
 5. Writes are schema-validated by pi-ai, persisted, and hot-committed; dsh's native UI/request path takes over.
-6. **Idempotent**: models and headers that are already declared are untouched; a second scan is a no-op. Listens to `settings/updated`, so models or providers added later are covered automatically.
+6. **Idempotent**: models and headers that are already declared are untouched; a second scan is a no-op. Listens to `settings/document-updated`, so models or providers added later are covered automatically.
 
 ## Config
 
@@ -54,9 +52,9 @@ Or mount manually in a profile patch:
 | `autoSessionHeader` | `true` | Auto-inject `x-opencode-session` for `opencode.ai` gateways |
 | `sessionHeaderValue` | `'dsh-session'` | Value for injected `x-opencode-session` header |
 
-> Want different defaults or wire values? After the patch they live in the `llm-pi-ai` section of `settings.yaml` — edit them freely; the plugin never overwrites existing declarations.
+> Want different defaults or wire values? After the patch they live in the `llm-pi-ai` entry of the active Profile patch — edit them freely; the plugin never overwrites existing declarations.
 
 ## Notes
 
 - The plugin reads and mutates the `llm-pi-ai` namespace but does **not** own it (pi-ai registers it exclusively). All writes use the public `settings.mutate` API — equivalent to editing via the Web UI.
-- Wire spellings are OpenAI-compatible (`low`/`medium`/`high`/...). Most OpenAI-compatible gateways accept them; if one expects its own spelling, adjust the values in settings.yaml.
+- Wire spellings are OpenAI-compatible (`low`/`medium`/`high`/...). Most OpenAI-compatible gateways accept them; if one expects its own spelling, adjust the values in the Profile patch.

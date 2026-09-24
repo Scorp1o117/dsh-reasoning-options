@@ -76,7 +76,7 @@ const Config = z.object({
   enabled: z.boolean().default(true),
   autoSessionHeader: z.boolean().default(true),
   sessionHeaderValue: z.string().default("dsh-session"),
-});
+}).volatile();
 
 /** True when a model profile already declares reasoningEfforts. */
 function hasEfforts(model) {
@@ -154,7 +154,7 @@ export function buildPatchedSection(section, options = {}) {
  * persisted, committed). No-op when nothing is missing.
  */
 export async function reconcile(settings, logger, config = {}) {
-  const section = settings.section(TARGET_NS);
+  const section = settings.describe().find((row) => row.ns === TARGET_NS)?.user;
   const next = buildPatchedSection(section, config);
   if (next === null) return 0;
   try {
@@ -171,10 +171,10 @@ export async function reconcile(settings, logger, config = {}) {
 
 /** Plugin entry. */
 function apply(ctx, config) {
-  const cfg = () => config;
+  const cfg = () => typeof config.get === "function" ? config.get() : config;
 
   const settings = ctx.settings;
-  if (!settings || typeof settings.update !== "function" || typeof settings.section !== "function") {
+  if (!settings || typeof settings.update !== "function" || typeof settings.describe !== "function") {
     ctx.logger.warn("[reasoning-efforts] settings service unavailable; plugin disabled");
     return;
   }
@@ -191,7 +191,7 @@ function apply(ctx, config) {
   // Re-run whenever the target namespace changes (model additions/edits, and
   // the echo of our own update — which terminates because the second scan
   // finds nothing to do).
-  ctx.on("settings/updated", (changedNs) => {
+  ctx.on("settings/document-updated", (changedNs) => {
     if (changedNs === TARGET_NS) run();
   });
 

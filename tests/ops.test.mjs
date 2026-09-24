@@ -1,6 +1,6 @@
 // exercise buildPatchedSection against a representative llm-pi-ai user section
 import assert from 'node:assert/strict'
-import { buildPatchedSection } from '../index.js'
+import { buildPatchedSection, reconcile } from '../index.js'
 
 // Mirrors what settings.section('llm-pi-ai') returns: ONLY what the user
 // wrote (no schema-default materialization).
@@ -94,3 +94,13 @@ const nextCustomVal = buildPatchedSection(sectionCustomVal, { sessionHeaderValue
 assert.deepEqual(nextCustomVal.providers.opencodego.headers, { 'x-opencode-session': 'custom-prefix-123' }, 'custom sessionHeaderValue respected')
 
 console.log('ALL PASS')
+
+// DSH 0.1.7 exposes the user override through describe(), not section().
+let written
+const settings = {
+  describe: () => [{ ns: 'llm-pi-ai', user: section }],
+  update: async (ns, patch) => { written = { ns, patch } },
+}
+assert.equal(await reconcile(settings, null), 1)
+assert.equal(written.ns, 'llm-pi-ai')
+assert.deepEqual(written.patch.providers.opencodego.models[0].reasoningEfforts, FULL)

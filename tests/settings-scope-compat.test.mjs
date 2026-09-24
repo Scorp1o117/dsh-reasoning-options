@@ -7,8 +7,9 @@ const source = await readFile(new URL('../index.js', import.meta.url), 'utf8');
 
 test('manifest records verified DSH latest and next without claiming alpha', () => {
   const compatibility = manifest.dsh.compatibility;
-  assert.equal(compatibility.dshReleases['0.1.5-rc.2'], 'compatible');
-  assert.equal(compatibility.dshReleases['0.1.5-rc.3'], 'compatible');
+  assert.equal(compatibility.dshReleases['0.1.5-rc.2'], 'incompatible');
+  assert.equal(compatibility.dshReleases['0.1.5-rc.3'], 'incompatible');
+  assert.equal(compatibility.dshReleases['0.1.7-rc.1'], 'compatible');
   for (const version of ['0.1.6-alpha.1', '0.1.6-alpha.2', '0.1.7-alpha.1']) {
     assert.equal(compatibility.dshReleases[version], 'unknown');
   }
@@ -16,12 +17,10 @@ test('manifest records verified DSH latest and next without claiming alpha', () 
   assert.deepEqual(compatibility.profiles, ['web']);
 });
 
-test('peer deps cover dsh rc.7 through next without rc.6', () => {
+test('peer deps target the new DSH settings API', () => {
   for (const [name, range] of Object.entries(manifest.peerDependencies)) {
     if (!name.startsWith('@deepseek-ai/')) continue;
-    assert.match(range, /\^0\.1\.0-rc\.7/);
-    assert.match(range, /\^0\.1\.1-rc\.1/);
-    assert.doesNotMatch(range, /rc\.6/);
+    assert.equal(range, '^0.1.7-rc.1');
   }
 });
 
