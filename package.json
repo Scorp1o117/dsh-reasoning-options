@@ -1,6 +1,6 @@
 {
   "name": "dsh-reasoning-options",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "DeepSeek Harness 推理强度与网关增强插件：自动为 llm-pi-ai 下所有模型补齐推理强度档位（off→max 全七档），并自动为 OpenCode Go 网关注入必需的 x-opencode-session 路由 Header，写入 settings 由 dsh 原生解析生效。",
   "type": "module",
   "main": "index.js",
@@ -59,7 +59,7 @@
     "url": "https://github.com/Scorp1o117/dsh-reasoning-options/issues"
   },
   "scripts": {
-    "test": "node tests/settings-scope-compat.test.mjs && node tests/ops.test.mjs"
+    "test": "node tests/settings-scope-compat.test.mjs && node tests/ops.test.mjs && node --test tests/scheduling.test.mjs"
   },
   "peerDependencies": {
     "@deepseek-ai/dsh-settings": "^0.1.7-rc.1"

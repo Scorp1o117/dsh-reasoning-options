@@ -14,23 +14,38 @@
 // `reasoningEfforts`, writes back the same section with the full level set
 // (off → max) added, plus a route-level `reasoning: high` default where a
 // route declares none. The write goes through the normal settings pipeline
-// (schema-validated by pi-ai, persisted to settings.yaml, hot-committed), so
-// dsh's own machinery — UI picker, request dispatch — does the rest. No
-// adapter internals are touched.
+// (schema-validated by pi-ai, persisted to the profile patch document,
+// hot-committed), so dsh's own machinery — UI picker, request dispatch — does
+// the rest. No adapter internals are touched.
 //
 // NOTE on arrays: dsh-settings `mutate` path ops and `update` merge both
 // replace arrays wholesale, so we must always restate the full `models` array
 // for a provider we touch. We therefore build the next user section from the
 // CURRENT USER section (not the schema-resolved view, which would bake in
-// defaults) and `update()` it as one patch.
+// defaults) and `update()` it as one patch. Because that patch restates the
+// arrays, every write carries the revision it was computed from: a namespace
+// that moved underneath us (a Web UI save racing this pass) fails the write
+// with SETTINGS_CONFLICT and we re-read and re-plan instead of clobbering it.
 //
 // Idempotent: models that already declare efforts are left alone, and a scan
-// that finds nothing to do performs no write, so the settings/updated echo of
-// our own update terminates immediately.
+// that finds nothing to do performs no write, so the echo of our own update
+// terminates immediately.
+//
+// Triggers: a pass runs on `settings/document-updated` for the target
+// namespace, on `app-boot/config-reload`, and at least every
+// `pollIntervalMs`. Neither trigger runs the write itself: the event that
+// follows a settings write is emitted INSIDE dsh's hot-reload transaction, and
+// a write issued from inside that transaction is refused ("HMR transactions
+// cannot be nested"), while a deferred callback would inherit that transaction
+// just the same. A trigger only flags the namespace dirty, and the pass runs
+// from this plugin's own timer context. The periodic rescan additionally
+// covers a patch document edited by hand, which dsh reads from disk but never
+// reloads on its own.
 //
 // Configuration (cordis.patch.yml `config`):
 //   reasoning-efforts:
-//     enabled: true   # set false to stop auto-patching
+//     enabled: true          # set false to stop auto-patching
+//     pollIntervalMs: 30000  # rescan period; 0 disables the poll
 //
 // No settings namespace is owned by this plugin; the `llm-pi-ai` namespace is
 // read + updated, never owned.
@@ -69,6 +84,12 @@ const DEFAULT_SESSION_HEADER = "x-opencode-session";
 /** Default session ID value used when auto-injecting OpenCode session header. */
 const DEFAULT_SESSION_HEADER_VALUE = "dsh-session";
 
+/** Default rescan period, covering a patch document edited outside dsh. */
+const DEFAULT_POLL_INTERVAL_MS = 30000;
+
+/** A racing writer may move the namespace a few times; each retry re-reads. */
+const MAX_PASS_ATTEMPTS = 3;
+
 import z from "@deepseek-ai/schemastery";
 
 /** Runtime schema for the reasoning-efforts row. */
@@ -76,6 +97,7 @@ const Config = z.object({
   enabled: z.boolean().default(true),
   autoSessionHeader: z.boolean().default(true),
   sessionHeaderValue: z.string().default("dsh-session"),
+  pollIntervalMs: z.natural().default(DEFAULT_POLL_INTERVAL_MS),
 }).volatile();
 
 /** True when a model profile already declares reasoningEfforts. */
@@ -148,25 +170,91 @@ export function buildPatchedSection(section, options = {}) {
   return { ...section, providers: nextProviders };
 }
 
+/** Whether a refused write only means the namespace moved under this pass. */
+function isConflict(error) {
+  return error?.code === "SETTINGS_CONFLICT" || error?.name === "SettingsConflictError";
+}
+
 /**
  * Scan-and-fix pass. Reads the raw llm-pi-ai user section, builds the patched
  * section, and applies it through settings.update (schema-validated by pi-ai,
- * persisted, committed). No-op when nothing is missing.
+ * persisted, committed) with the revision that patch was planned from. No-op
+ * when nothing is missing; a namespace that moved in between is re-read and
+ * re-planned rather than overwritten.
  */
 export async function reconcile(settings, logger, config = {}) {
-  const section = settings.describe().find((row) => row.ns === TARGET_NS)?.user;
-  const next = buildPatchedSection(section, config);
-  if (next === null) return 0;
-  try {
-    await settings.update(TARGET_NS, next);
-    logger?.info?.(`[reasoning-efforts] patched reasoning / session declarations into ${TARGET_NS}`);
-    return 1;
-  } catch (error) {
-    // A refused write (e.g. pi-ai schema rejection) must not take the plugin
-    // down; report and leave the namespace untouched.
-    logger?.warn?.(`[reasoning-efforts] update failed: ${error instanceof Error ? error.message : String(error)}`);
-    return 0;
+  for (let attempt = 1; ; attempt += 1) {
+    const descriptor = settings.describe().find((row) => row.ns === TARGET_NS);
+    const next = buildPatchedSection(descriptor?.user, config);
+    if (next === null) return 0;
+    try {
+      await settings.update(TARGET_NS, next, descriptor.revision);
+      logger?.info?.(`[reasoning-efforts] patched reasoning / session declarations into ${TARGET_NS}`);
+      return 1;
+    } catch (error) {
+      // A refused write (e.g. pi-ai schema rejection) must not take the plugin
+      // down; report and leave the namespace untouched.
+      if (isConflict(error) && attempt < MAX_PASS_ATTEMPTS) continue;
+      logger?.warn?.(`[reasoning-efforts] update failed: ${error instanceof Error ? error.message : String(error)}`);
+      return 0;
+    }
   }
+}
+
+/**
+ * Serialize passes behind one another and run each of them from THIS plugin's
+ * own async context. dsh emits `settings/document-updated` from inside the
+ * hot-reload transaction that is applying the change, and a settings write
+ * issued from inside that transaction is refused outright ("HMR transactions
+ * cannot be nested") — and a deferred callback would inherit that transaction
+ * all the same, since async context follows the call site. So a trigger only
+ * sets a flag, and the timer created here — whose context is this plugin's
+ * activation, not the writer's transaction — performs the work, at least
+ * every `pollMs` and immediately when flagged.
+ *
+ * @param {() => Promise<any>} pass - the scan to run.
+ * @param {object} [options] - `pollMs` forced rescan period (0 disables),
+ *   `tickMs` flag-check period, `logger` for scan failures, and the timer
+ *   implementations for tests.
+ * @returns {{ request: () => void, dispose: () => void }} trigger and disposer.
+ */
+export function createScheduler(pass, options = {}) {
+  const {
+    pollMs = DEFAULT_POLL_INTERVAL_MS,
+    tickMs = 1000,
+    logger,
+    setIntervalImpl = setInterval,
+    clearIntervalImpl = clearInterval,
+    now = () => Date.now(),
+  } = options;
+  let dirty = true;
+  let running = false;
+  let nextPoll = pollMs > 0 ? now() + pollMs : Infinity;
+  const timer = setIntervalImpl(() => {
+    if (running) return;
+    const due = pollMs > 0 && now() >= nextPoll;
+    if (!dirty && !due) return;
+    dirty = false;
+    if (due) nextPoll = now() + pollMs;
+    running = true;
+    void Promise.resolve()
+      .then(pass)
+      .catch((error) => {
+        // A refused write must not end the schedule; the next pass retries.
+        logger?.warn?.(`[reasoning-efforts] scan failed: ${error instanceof Error ? error.message : String(error)}`);
+      })
+      .then(() => {
+        running = false;
+      });
+  }, tickMs);
+  return {
+    request() {
+      dirty = true;
+    },
+    dispose() {
+      clearIntervalImpl(timer);
+    },
+  };
 }
 
 /** Plugin entry. */
@@ -179,34 +267,26 @@ function apply(ctx, config) {
     return;
   }
 
-  const run = () => {
-    if (cfg().enabled === false) return;
-    // Defer: on first boot the target namespace may not be registered yet
-    // (pi-ai plugin activation order). settings.section returns undefined
-    // then; reconcile() no-ops on undefined, and the settings/updated
-    // listener below re-runs the pass once llm-pi-ai appears.
-    void reconcile(settings, ctx.logger, cfg());
-  };
+  const scheduler = createScheduler(() => {
+    const current = cfg();
+    if (current.enabled === false) return 0;
+    return reconcile(settings, ctx.logger, current);
+  }, { pollMs: cfg().pollIntervalMs ?? DEFAULT_POLL_INTERVAL_MS, logger: ctx.logger });
 
   // Re-run whenever the target namespace changes (model additions/edits, and
   // the echo of our own update — which terminates because the second scan
   // finds nothing to do).
   ctx.on("settings/document-updated", (changedNs) => {
-    if (changedNs === TARGET_NS) run();
+    if (changedNs === TARGET_NS) scheduler.request();
   });
+  ctx.on("app-boot/config-reload", () => scheduler.request());
 
-  // Initial pass, deferred so the settings document has published. Retry a few
-  // times with a backoff in case the pi-ai plugin (which owns llm-pi-ai)
-  // registers later than us; each retry is a cheap no-op read once nothing is
-  // missing.
-  let attempts = 0;
-  const MAX_ATTEMPTS = 10;
-  const tick = () => {
-    attempts += 1;
-    run();
-    if (attempts < MAX_ATTEMPTS) setTimeout(tick, 500 * attempts);
-  };
-  setTimeout(tick, 0);
+  // On first boot the target namespace may not be registered yet (pi-ai plugin
+  // activation order), and a patch document edited outside dsh is read from
+  // disk but never reloaded on its own; the scheduled poll covers both.
+  // `ctx.effect` runs its callback immediately and disposes what it RETURNS,
+  // so the disposer is returned rather than called here.
+  ctx.effect(() => scheduler.dispose);
 }
 
-export { Config, apply, inject, name, DEFAULT_SESSION_HEADER, DEFAULT_SESSION_HEADER_VALUE };
+export { Config, apply, inject, name, DEFAULT_POLL_INTERVAL_MS, DEFAULT_SESSION_HEADER, DEFAULT_SESSION_HEADER_VALUE };
