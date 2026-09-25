@@ -1,6 +1,6 @@
 {
   "name": "dsh-reasoning-options",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "DeepSeek Harness 推理强度与网关增强插件：自动为 llm-pi-ai 下所有模型补齐推理强度档位（off→max 全七档），并自动为 OpenCode Go 网关注入必需的 x-opencode-session 路由 Header，写入 settings 由 dsh 原生解析生效。",
   "type": "module",
   "main": "index.js",
@@ -21,7 +21,8 @@
         "0.1.6-alpha.2": "unknown",
         "0.1.7-alpha.1": "unknown",
         "0.1.7-alpha.2": "unknown",
-        "0.1.7-rc.1": "compatible"
+        "0.1.7-rc.1": "compatible",
+        "0.1.7-rc.2": "compatible"
       },
       "node": ">=20.18",
       "profiles": [

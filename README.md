@@ -13,9 +13,9 @@ This plugin closes both gaps: it scans the `llm-pi-ai` namespace, adds the full 
 
 > The plugin only gives users a convenient way to pick and ensures gateway requirements are satisfied. Which level a model actually supports is the user's call; the plugin does not judge model fitness.
 
-## Compatibility (v0.2.2)
+## Compatibility (v0.2.3)
 
-Targets DSH `0.1.7-rc.1` (`next`); npm `latest` is `0.1.5-rc.3`.
+Tested with DSH `0.1.7-rc.1` and `0.1.7-rc.2` (`next`); npm `latest` is `0.1.5-rc.3`.
 The plugin reads `settings.describe()` and writes the current Profile patch.
 Older hosts require an older plugin release; alpha releases remain `unknown`.
 
