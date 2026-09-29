@@ -13,13 +13,20 @@ This plugin closes both gaps: it scans the `llm-pi-ai` namespace, adds the full 
 
 > The plugin only gives users a convenient way to pick and ensures gateway requirements are satisfied. Which level a model actually supports is the user's call; the plugin does not judge model fitness.
 
-## Compatibility (v0.3.0)
+## Desktop install
 
-Tested with DSH `0.1.7-rc.1` and `0.1.7-rc.2` (`next`); npm `latest` is `0.1.5-rc.3`.
-The plugin reads `settings.describe()` and writes the current Profile patch.
-Older hosts require an older plugin release; alpha releases remain `unknown`.
+Use the Desktop-installed `dsh` command (Application → Manage dsh Command), or the app’s Plugins page. Then install into the Desktop profile:
 
-> Since DSH `0.1.7-rc.2` there is no `settings.yaml`: on first boot it is renamed to `settings.yaml.imported` and its sections are folded into the profile patch. What this plugin reads and writes is the `llm-pi-ai` entry of `cordis.patch.yml`.
+```powershell
+dsh plugin --profile desktop add dsh-reasoning-options@0.3.1
+```
+
+Restart the Desktop app to load the client bundle. Desktop keeps its profile under `$DSH_HOME/profiles/desktop`.
+
+
+## Compatibility (v0.3.1)
+
+Verified with DSH `0.1.7-rc.2` (Web) and `0.2.0-rc.2` (Desktop runtime) in isolated profiles. The Desktop app uses its own `desktop` profile. Other DSH prereleases remain unverified.
 
 ## Install
 

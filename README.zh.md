@@ -13,13 +13,20 @@
 
 > 只负责「给用户一个更方便的选择入口」并保证网关连通性。具体选哪档、模型支不支持，由用户自己决定，插件不判断模型适配度。
 
-## 兼容性（v0.3.0）
+## 桌面端安装
 
-已验证 DSH `0.1.7-rc.1` 与 `0.1.7-rc.2`（npm `next`）；npm `latest` 是 `0.1.5-rc.3`。
-插件通过 `settings.describe()` 读取配置，写入当前 Profile patch（`cordis.patch.yml`）。
-旧宿主请使用插件旧版；alpha 版本继续标记 `unknown`。
+在桌面端的“插件”页面安装，或使用桌面端“应用 → 管理 dsh 命令”注册的命令：
 
-> DSH `0.1.7-rc.2` 起 `settings.yaml` 已被废弃：首次启动时它会被改名成 `settings.yaml.imported`，各段内容导入 profile patch。因此本插件现在读写的都是 `cordis.patch.yml` 里 `llm-pi-ai` 那条的 `config`。
+```powershell
+dsh plugin --profile desktop add dsh-reasoning-options@0.3.1
+```
+
+重启桌面端以加载客户端插件。配置位于 `$DSH_HOME/profiles/desktop`。
+
+
+## 兼容性（v0.3.1）
+
+已在 DSH `0.1.7-rc.2`（Web）与 `0.2.0-rc.2`（桌面端运行时）的一次性 Profile 验证。桌面端使用独立的 `desktop` Profile；其他预发布版本暂未验证。
 
 ## 安装
 

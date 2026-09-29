@@ -11,17 +11,18 @@ test('manifest records verified DSH latest and next without claiming alpha', () 
   assert.equal(compatibility.dshReleases['0.1.5-rc.3'], 'incompatible');
   assert.equal(compatibility.dshReleases['0.1.7-rc.1'], 'compatible');
   assert.equal(compatibility.dshReleases['0.1.7-rc.2'], 'compatible');
+  assert.equal(compatibility.dshReleases['0.2.0-rc.2'], 'compatible');
   for (const version of ['0.1.6-alpha.1', '0.1.6-alpha.2', '0.1.7-alpha.1']) {
     assert.equal(compatibility.dshReleases[version], 'unknown');
   }
   assert.equal(compatibility.node, manifest.engines.node);
-  assert.deepEqual(compatibility.profiles, ['web']);
+  assert.deepEqual(compatibility.profiles, ['web', 'desktop']);
 });
 
 test('peer deps target the new DSH settings API', () => {
   for (const [name, range] of Object.entries(manifest.peerDependencies)) {
     if (!name.startsWith('@deepseek-ai/')) continue;
-    assert.equal(range, '^0.1.7-rc.1');
+    assert.equal(range, '^0.1.7-rc.1 || 0.2.0-rc.2');
   }
 });
 
