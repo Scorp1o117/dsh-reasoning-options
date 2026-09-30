@@ -1,5 +1,9 @@
 # dsh-reasoning-options
 
+## 配置入口（DSH 0.2.0-rc.2 起）
+
+在首页侧边栏打开 **插件 → 已安装 → dsh-reasoning-options**，直接在插件详情页配置并保存。配置页注册到官方的 `plugins.bundle.config` 接口；全局设置页不再重复显示配置入口。Web 与桌面版使用相同界面，本版要求 DSH 0.2.0-rc.2 或更新的 0.2.x 版本。现有配置无需迁移。
+
 **GitHub**: [Scorp1o117/dsh-reasoning-options](https://github.com/Scorp1o117/dsh-reasoning-options) · **npm**: [dsh-reasoning-options](https://www.npmjs.com/package/dsh-reasoning-options) · [English](README.md)
 
 给 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 的 **pi-ai 自定义模型（第三方网关）** 自动补上「推理强度」选择器，并**自动注入必需的网关路由 Header**（如 OpenCode Go 的 `x-opencode-session`）。
@@ -72,3 +76,5 @@ dsh plugin --profile web add dsh-reasoning-options
 - 插件写入的是 profile patch 中 `llm-pi-ai` 条目的 `config`，这一段会被整段重写（段内的 YAML 注释会丢失）。
 - **手工编辑 `cordis.patch.yml` 新增模型后不必重启 dsh**：下一次轮询（默认 30 秒内）会补齐档位，并顺带让新模型热生效。把 `pollIntervalMs` 调小可缩短这个延迟。
 - 档位 wire 值为 OpenAI 兼容风格（`low`/`medium`/`high`/…）。绝大多数 OpenAI 兼容网关接受；个别网关若只认自己的写法，可在 `cordis.patch.yml` 里把对应模型的档位值改成它的写法。
+
+配置页可设置自动补齐推理档位、自动会话标识头、会话标识值和检查间隔；保存后宿主按现有配置生命周期生效。

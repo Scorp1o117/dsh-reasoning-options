@@ -1,5 +1,9 @@
 # dsh-reasoning-options
 
+## Configuration page (DSH 0.2.0-rc.2 and later)
+
+Open **Plugins → Installed → dsh-reasoning-options** from the homepage sidebar to configure and save this plugin. The page uses the official `plugins.bundle.config` interface, without a duplicate entry in global Settings. Web and Desktop share the page. This version requires DSH 0.2.0-rc.2 or a later 0.2.x host; existing configuration is retained.
+
 **GitHub**: [Scorp1o117/dsh-reasoning-options](https://github.com/Scorp1o117/dsh-reasoning-options) · **npm**: [dsh-reasoning-options](https://www.npmjs.com/package/dsh-reasoning-options) · [中文](README.zh.md)
 
 A small DeepSeek Harness plugin that automatically adds a **reasoning-effort picker** to every pi-ai (third-party gateway) model, and **auto-injects required routing headers** (such as `x-opencode-session` for OpenCode Go).
@@ -72,3 +76,5 @@ Or mount manually in a profile patch:
 - The plugin writes the `config` of the `llm-pi-ai` row in the profile patch, which is rewritten as a whole (YAML comments inside that row are lost).
 - **Hand-editing `cordis.patch.yml` no longer needs a dsh restart**: the next poll (within 30s by default) adds the missing declarations and hot-applies the new models along the way. Lower `pollIntervalMs` to shorten the delay.
 - Wire spellings are OpenAI-compatible (`low`/`medium`/`high`/...). Most OpenAI-compatible gateways accept them; if one expects its own spelling, adjust the values in the Profile patch.
+
+The page configures reasoning augmentation, automatic session headers, session identity and polling interval through the existing Host configuration lifecycle.
