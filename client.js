@@ -75,6 +75,7 @@ window.__ModuleLoader__.load({
     ];
 
     function ReasoningPage(props) {
+      useLocale(props.locale);
       var scope = props.scope, t = props.t;
       var [snapshot, setSnapshot] = react.useState(function () { return scope.getSnapshot(); });
       var [draft, setDraft] = react.useState({});
@@ -96,9 +97,9 @@ window.__ModuleLoader__.load({
         setBusy(true); setNotice(""); setError("");
         Promise.resolve().then(function () { return scope.mutate(ops, snapshot.revision); }).then(function (ok) {
           setSnapshot(scope.getSnapshot());
-          if (ok) { setDraft({}); setNotice(t("saved")); }
-          else setError(t("error"));
-        }).catch(function () { setError(t("error")); }).finally(function () { setBusy(false); });
+          if (ok) { setDraft({}); setNotice({ key: "saved" }); }
+          else setError({ key: "error" });
+        }).catch(function () { setError({ key: "error" }); }).finally(function () { setBusy(false); });
       }
 
       function renderField(field) {
@@ -128,8 +129,23 @@ window.__ModuleLoader__.load({
           h("button", { type: "button", onClick: save, disabled: busy || !snapshot.writable || !Object.keys(draft).length,
             className: "__ro_save"
           }, t(busy ? "saving" : "save")),
-          notice ? h("span", { role: "status" }, notice) : null,
-          error ? h("span", { role: "alert" }, error) : null));
+          notice ? h("span", { role: "status" }, messageText(t, notice)) : null,
+          error ? h("span", { role: "alert" }, messageText(t, error)) : null));
+    }
+
+
+    // Follow the host language without remounting the form or losing drafts.
+    function useLocale(locale) {
+      var refresh = react.useState(0)[1];
+      react.useEffect(function () {
+        if (!locale || typeof locale.subscribe !== "function") return;
+        return locale.subscribe(function () { refresh(function (revision) { return revision + 1; }); });
+      }, [locale]);
+    }
+    // Keep translation keys in state so feedback follows later language changes.
+    function messageText(t, message) {
+      if (!message) return "";
+      return t(message.key) + (message.detailKey ? ": " + t(message.detailKey) : message.detail ? ": " + message.detail : "");
     }
 
     function apply(ctx) {
@@ -137,7 +153,7 @@ window.__ModuleLoader__.load({
       var scope = ctx.configForms.get("reasoning-efforts"), t = ctx.locale.bind(NS);
       ctx.slots.inject("plugins.bundle.config", function () {
         return ctx.slots.register({ name: "plugins.bundle.config", key: "dsh-reasoning-options", locale: NS }, function (props) {
-          return h(ReasoningPage, Object.assign({}, props, { scope: scope, t: t }));
+          return h(ReasoningPage, Object.assign({}, props, { scope: scope, t: t, locale: ctx.locale }));
         });
       });
     }
