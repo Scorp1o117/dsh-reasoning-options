@@ -7,6 +7,7 @@
   "exports": {
     ".": "./index.js",
     "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json",
     "./client": "./client.js"
   },
   "dsh": {
@@ -37,6 +38,7 @@
     }
   },
   "files": [
+    "locale",
     "index.js",
     "cordis.patch.yml",
     "README.md",
@@ -66,7 +68,7 @@
     "url": "https://github.com/Scorp1o117/dsh-reasoning-options/issues"
   },
   "scripts": {
-    "test": "node tests/settings-scope-compat.test.mjs && node tests/ops.test.mjs && node --test tests/scheduling.test.mjs && node --test tests/plugin-page.test.mjs tests/client-write-flow.test.mjs"
+    "test": "node tests/settings-scope-compat.test.mjs && node tests/ops.test.mjs && node --test tests/scheduling.test.mjs && node --test tests/plugin-page.test.mjs tests/client-write-flow.test.mjs && node --test tests/locale.test.mjs"
   },
   "peerDependencies": {
     "@deepseek-ai/dsh-settings": ">=0.2.0-rc.2 <0.3.0",

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "推理选项",
+    "description": "为模型补齐推理强度档位，并为 OpenCode 网关设置会话标识头。"
+  }
+}

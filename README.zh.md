@@ -1,8 +1,12 @@
 # dsh-reasoning-options
 
+插件跟随 DSH 的语言设置（DSH 0.2.0-rc.2 内置中文和 English），配置页面、状态提示和插件列表名称/简介同步切换。扩展语言使用宿主的回退链。切换语言保留未保存的设置，无需单独选择插件语言。
+
 ## 配置入口（DSH 0.2.0-rc.2 起）
 
 在首页侧边栏打开 **插件 → 已安装 → dsh-reasoning-options**，直接在插件详情页配置并保存。配置页注册到官方的 `plugins.bundle.config` 接口；全局设置页不再重复显示配置入口。Web 与桌面版使用相同界面，本版要求 DSH 0.2.0-rc.2 或更新的 0.2.x 版本。现有配置无需迁移。
+
+主页面只显示自动补齐推理档位的开关；需要调整 OpenCode 会话标识头或检查间隔时再展开 **高级设置**。已有配置保留，保存只写入编辑过的字段。
 
 **GitHub**: [Scorp1o117/dsh-reasoning-options](https://github.com/Scorp1o117/dsh-reasoning-options) · **npm**: [dsh-reasoning-options](https://www.npmjs.com/package/dsh-reasoning-options) · [English](README.md)
 
@@ -53,7 +57,7 @@ dsh plugin --profile web add dsh-reasoning-options
 1. 读取 `llm-pi-ai` 命名空间当前的**用户层**配置（`settings.describe()` 每次都会现读 profile patch 文件）。
 2. 对每个 provider 的每个模型：若没有 `reasoningEfforts`，生成对应变更，写入全七档声明。
 3. 对没设 `reasoning` 默认档的 provider 路由，补 `reasoning: high`。
-4. 对 OpenCode Go provider（`baseURL` 包含 `opencode.ai`），若缺少 session header 则自动注入 `headers: { x-opencode-session: 'dsh-session' }`。
+4. 对 HTTP(S) OpenCode Go provider（URL 主机名为 `opencode.ai` 或其子域名），若缺少 session header 则自动注入 `headers: { x-opencode-session: 'dsh-session' }`。路径、查询参数或用户名中出现该字符串不会触发注入；已有 Header 保持原样。
 5. 所有写入经 pi-ai 自己的 schema 校验后持久化并热提交，dsh 原生 UI/请求链路随即生效。
 6. **幂等 + 串行**：已有档位和已配置 Header 的项目不碰；补完后再扫描是空操作，不会反复写。同一时刻只跑一次扫描，多次触发不会互相抢配置文件锁。
 7. **触发时机**：`settings/document-updated`（在 Web UI 里改模型）、`app-boot/config-reload`，以及每 `pollIntervalMs` 一次的兜底扫描。事件只置脏标记，真正的写入由插件自己的定时器上下文执行——因为 dsh 是在热重载事务**内部**发出设置变更事件的，而在该事务里再发起一次写入会被直接拒绝（`HMR transactions cannot be nested`）。

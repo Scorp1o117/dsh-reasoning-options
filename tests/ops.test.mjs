@@ -1,6 +1,18 @@
 // exercise buildPatchedSection against a representative llm-pi-ai user section
 import assert from 'node:assert/strict'
-import { buildPatchedSection, reconcile } from '../index.js'
+import { buildPatchedSection, reconcile, isOpenCode } from '../index.js'
+
+for (const baseURL of ['https://opencode.ai/v1', 'https://API.OpenCode.ai:443/v1', 'https://opencode.ai./v1']) {
+  assert.equal(isOpenCode({ baseURL }), true, baseURL)
+}
+for (const baseURL of [undefined, '', 'not a URL', 'https://opencode.ai.example/v1',
+  'https://fakeopencode.ai/v1', 'https://example.test/opencode.ai',
+  'https://example.test/?next=opencode.ai', 'https://opencode.ai@example.test/v1',
+  'ftp://opencode.ai/v1']) {
+  assert.equal(isOpenCode({ baseURL }), false, String(baseURL))
+  const patch = buildPatchedSection({ providers: { gateway: { baseURL, models: [{ id: 'm' }] } } })
+  assert.equal(patch.providers.gateway.headers, undefined, 'unrelated routes receive no session header')
+}
 
 // Mirrors what settings.section('llm-pi-ai') returns: ONLY what the user
 // wrote (no schema-default materialization).

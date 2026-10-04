@@ -1,8 +1,12 @@
 # dsh-reasoning-options
 
+The plugin follows the DSH language setting (Chinese and English in DSH 0.2.0-rc.2), including configuration, status messages and plugin-list metadata. Language-pack locales use the host fallback chain. Switching languages preserves unsaved settings; there is no separate plugin language selector.
+
 ## Configuration page (DSH 0.2.0-rc.2 and later)
 
 Open **Plugins → Installed → dsh-reasoning-options** from the homepage sidebar to configure and save this plugin. The page uses the official `plugins.bundle.config` interface, without a duplicate entry in global Settings. Web and Desktop share the page. This version requires DSH 0.2.0-rc.2 or a later 0.2.x host; existing configuration is retained.
+
+The main page shows one reasoning-augmentation switch. Open **Advanced** only to customize the OpenCode session header or automatic check interval. Existing values are retained; Save writes only the fields you edited.
 
 **GitHub**: [Scorp1o117/dsh-reasoning-options](https://github.com/Scorp1o117/dsh-reasoning-options) · **npm**: [dsh-reasoning-options](https://www.npmjs.com/package/dsh-reasoning-options) · [中文](README.zh.md)
 
@@ -53,7 +57,7 @@ Or mount manually in a profile patch:
 1. Read the current **user layer** of the `llm-pi-ai` namespace (`settings.describe()` re-reads the profile patch from disk every time).
 2. For each model without `reasoningEfforts`, generate a mutation writing the full seven-level declaration at the exact path.
 3. For provider routes without a `reasoning` default, add `reasoning: high`.
-4. For OpenCode Go providers (`baseURL` containing `opencode.ai`), auto-inject `x-opencode-session: dsh-session` into `headers` if missing.
+4. For HTTP(S) OpenCode Go providers whose URL hostname is `opencode.ai` or a subdomain, auto-inject `x-opencode-session: dsh-session` into `headers` if missing. A mention in the path, query or username does not qualify; existing headers are preserved.
 5. Writes are schema-validated by pi-ai, persisted, and hot-committed; dsh's native UI/request path takes over.
 6. **Idempotent and serialized**: models and headers that are already declared are untouched, and a scan that finds nothing writes nothing. Only one pass runs at a time, so repeated triggers never contend for the settings file lock.
 7. **When it runs**: on `settings/document-updated` (a model changed through the Web UI), on `app-boot/config-reload`, and as a fallback every `pollIntervalMs`. A trigger only flags the namespace; the write itself runs from this plugin's own timer context. dsh emits the settings event from *inside* the hot-reload transaction that is applying the change, and a write issued inside that transaction is refused outright (`HMR transactions cannot be nested`).
