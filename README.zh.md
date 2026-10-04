@@ -4,6 +4,8 @@
 
 在首页侧边栏打开 **插件 → 已安装 → dsh-reasoning-options**，直接在插件详情页配置并保存。配置页注册到官方的 `plugins.bundle.config` 接口；全局设置页不再重复显示配置入口。Web 与桌面版使用相同界面，本版要求 DSH 0.2.0-rc.2 或更新的 0.2.x 版本。现有配置无需迁移。
 
+主页面只显示自动补齐推理档位的开关；需要调整 OpenCode 会话标识头或检查间隔时再展开 **高级设置**。已有配置保留，保存只写入编辑过的字段。
+
 **GitHub**: [Scorp1o117/dsh-reasoning-options](https://github.com/Scorp1o117/dsh-reasoning-options) · **npm**: [dsh-reasoning-options](https://www.npmjs.com/package/dsh-reasoning-options) · [English](README.md)
 
 给 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 的 **pi-ai 自定义模型（第三方网关）** 自动补上「推理强度」选择器，并**自动注入必需的网关路由 Header**（如 OpenCode Go 的 `x-opencode-session`）。

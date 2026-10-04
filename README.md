@@ -4,6 +4,8 @@
 
 Open **Plugins → Installed → dsh-reasoning-options** from the homepage sidebar to configure and save this plugin. The page uses the official `plugins.bundle.config` interface, without a duplicate entry in global Settings. Web and Desktop share the page. This version requires DSH 0.2.0-rc.2 or a later 0.2.x host; existing configuration is retained.
 
+The main page shows one reasoning-augmentation switch. Open **Advanced** only to customize the OpenCode session header or automatic check interval. Existing values are retained; Save writes only the fields you edited.
+
 **GitHub**: [Scorp1o117/dsh-reasoning-options](https://github.com/Scorp1o117/dsh-reasoning-options) · **npm**: [dsh-reasoning-options](https://www.npmjs.com/package/dsh-reasoning-options) · [中文](README.zh.md)
 
 A small DeepSeek Harness plugin that automatically adds a **reasoning-effort picker** to every pi-ai (third-party gateway) model, and **auto-injects required routing headers** (such as `x-opencode-session` for OpenCode Go).

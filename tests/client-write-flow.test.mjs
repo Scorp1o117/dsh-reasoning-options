@@ -66,3 +66,14 @@ test('a refused reasoning write keeps edits and shows an error instead of succes
   assert.equal(find(ui.render(), node => node.props.role === 'status'), undefined);
   assert.equal(save(ui.render()).props.disabled, false);
 });
+
+test('only the main switch is outside the collapsed advanced settings', () => {
+  const ui = mount(true);
+  const tree = ui.render();
+  const advanced = find(tree, node => node.type === 'details');
+  assert.ok(advanced);
+  assert.equal(advanced.props.open, undefined);
+  assert.equal(input(advanced, 'enabled'), undefined);
+  assert.ok(input(advanced, 'sessionHeaderValue'));
+  assert.ok(input(tree, 'enabled'));
+});

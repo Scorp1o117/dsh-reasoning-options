@@ -11,6 +11,8 @@ window.__ModuleLoader__.load({
       sessionHeaderValue: "会话标识",
       pollIntervalMs: "自动检查间隔（毫秒，0 表示关闭定时检查）",
       intro: "为自定义模型补齐推理强度选项，并为 OpenCode 网关补齐会话标识。",
+      advanced: "高级设置：网关与检查间隔",
+      defaultsHint: "开启后自动工作；通常无需调整下方参数。",
       save: "保存", saving: "保存中…", saved: "已保存",
       unavailable: "插件配置尚未加载", error: "保存失败，请检查配置后重试"
     };
@@ -20,6 +22,8 @@ window.__ModuleLoader__.load({
       sessionHeaderValue: "Session identifier",
       pollIntervalMs: "Automatic check interval (ms; 0 disables periodic checks)",
       intro: "Add reasoning levels to custom models and session headers to OpenCode gateways.",
+      advanced: "Advanced: gateways and check interval",
+      defaultsHint: "Works automatically when enabled; the defaults usually need no changes.",
       save: "Save", saving: "Saving…", saved: "Saved",
       unavailable: "Plugin configuration is not loaded", error: "Save failed; check the configuration and retry"
     };
@@ -57,9 +61,7 @@ window.__ModuleLoader__.load({
         }).catch(function () { setError(t("error")); }).finally(function () { setBusy(false); });
       }
 
-      return h("div", { style: { maxWidth: 960, display: "flex", flexDirection: "column", gap: 24 } },
-        h("p", { style: { color: "var(--dsw-alias-label-secondary)" } }, t("intro")),
-        FIELDS.map(function (field) {
+      function renderField(field) {
           var current = Object.prototype.hasOwnProperty.call(draft, field.key) ? draft[field.key] : snapshot.value[field.key];
           var input = {
             type: field.type, disabled: busy || !snapshot.writable,
@@ -77,7 +79,14 @@ window.__ModuleLoader__.load({
           else { input.value = current ?? ""; if (field.type === "number") { input.min = 0; input.step = 1; } }
           return h("label", { key: field.key, style: { display: "flex", flexDirection: field.type === "checkbox" ? "row" : "column", gap: 10 } },
             h("span", null, t(field.key)), h("input", input));
-        }),
+      }
+      return h("div", { style: { maxWidth: 640, display: "flex", flexDirection: "column", gap: 20 } },
+        h("p", { style: { color: "var(--dsw-alias-label-secondary)" } }, t("intro")),
+        renderField(FIELDS[0]),
+        h("p", { style: { color: "var(--dsw-alias-label-secondary)", margin: 0 } }, t("defaultsHint")),
+        h("details", null,
+          h("summary", { style: { cursor: "pointer" } }, t("advanced")),
+          h("div", { style: { display: "flex", flexDirection: "column", gap: 16, paddingTop: 16 } }, FIELDS.slice(1).map(renderField))),
         h("div", { style: { display: "flex", gap: 12, alignItems: "center" } },
           h("button", { type: "button", onClick: save, disabled: busy || !snapshot.writable || !Object.keys(draft).length,
             style: { padding: "8px 16px", borderRadius: 10, border: 0, background: "var(--dsw-alias-label-primary)", color: "var(--dsw-alias-bg-layer-1)", font: "inherit" }
