@@ -53,7 +53,7 @@ dsh plugin --profile web add dsh-reasoning-options
 1. 读取 `llm-pi-ai` 命名空间当前的**用户层**配置（`settings.describe()` 每次都会现读 profile patch 文件）。
 2. 对每个 provider 的每个模型：若没有 `reasoningEfforts`，生成对应变更，写入全七档声明。
 3. 对没设 `reasoning` 默认档的 provider 路由，补 `reasoning: high`。
-4. 对 OpenCode Go provider（`baseURL` 包含 `opencode.ai`），若缺少 session header 则自动注入 `headers: { x-opencode-session: 'dsh-session' }`。
+4. 对 HTTP(S) OpenCode Go provider（URL 主机名为 `opencode.ai` 或其子域名），若缺少 session header 则自动注入 `headers: { x-opencode-session: 'dsh-session' }`。路径、查询参数或用户名中出现该字符串不会触发注入；已有 Header 保持原样。
 5. 所有写入经 pi-ai 自己的 schema 校验后持久化并热提交，dsh 原生 UI/请求链路随即生效。
 6. **幂等 + 串行**：已有档位和已配置 Header 的项目不碰；补完后再扫描是空操作，不会反复写。同一时刻只跑一次扫描，多次触发不会互相抢配置文件锁。
 7. **触发时机**：`settings/document-updated`（在 Web UI 里改模型）、`app-boot/config-reload`，以及每 `pollIntervalMs` 一次的兜底扫描。事件只置脏标记，真正的写入由插件自己的定时器上下文执行——因为 dsh 是在热重载事务**内部**发出设置变更事件的，而在该事务里再发起一次写入会被直接拒绝（`HMR transactions cannot be nested`）。

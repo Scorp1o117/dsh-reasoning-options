@@ -107,8 +107,14 @@ function hasEfforts(model) {
 
 /** True when a provider's baseURL points to an OpenCode endpoint. */
 export function isOpenCode(profile) {
-  const url = String(profile?.baseURL ?? "").toLowerCase();
-  return url.includes("opencode.ai");
+  try {
+    const url = new URL(profile?.baseURL);
+    const host = url.hostname.toLowerCase().replace(/\.$/, "");
+    return (url.protocol === "https:" || url.protocol === "http:") &&
+      (host === "opencode.ai" || host.endsWith(".opencode.ai"));
+  } catch {
+    return false;
+  }
 }
 
 /** True when headers already contains an x-opencode-session header (case-insensitive). */

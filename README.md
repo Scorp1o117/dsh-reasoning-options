@@ -53,7 +53,7 @@ Or mount manually in a profile patch:
 1. Read the current **user layer** of the `llm-pi-ai` namespace (`settings.describe()` re-reads the profile patch from disk every time).
 2. For each model without `reasoningEfforts`, generate a mutation writing the full seven-level declaration at the exact path.
 3. For provider routes without a `reasoning` default, add `reasoning: high`.
-4. For OpenCode Go providers (`baseURL` containing `opencode.ai`), auto-inject `x-opencode-session: dsh-session` into `headers` if missing.
+4. For HTTP(S) OpenCode Go providers whose URL hostname is `opencode.ai` or a subdomain, auto-inject `x-opencode-session: dsh-session` into `headers` if missing. A mention in the path, query or username does not qualify; existing headers are preserved.
 5. Writes are schema-validated by pi-ai, persisted, and hot-committed; dsh's native UI/request path takes over.
 6. **Idempotent and serialized**: models and headers that are already declared are untouched, and a scan that finds nothing writes nothing. Only one pass runs at a time, so repeated triggers never contend for the settings file lock.
 7. **When it runs**: on `settings/document-updated` (a model changed through the Web UI), on `app-boot/config-reload`, and as a fallback every `pollIntervalMs`. A trigger only flags the namespace; the write itself runs from this plugin's own timer context. dsh emits the settings event from *inside* the hot-reload transaction that is applying the change, and a write issued inside that transaction is refused outright (`HMR transactions cannot be nested`).
