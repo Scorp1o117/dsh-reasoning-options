@@ -4,6 +4,46 @@ window.__ModuleLoader__.load({
   factory: (require) => {
     var react = require("react");
     var h = react.createElement;
+    var CSS = "";
+    // Scoped flat controls retain native keyboard and form behavior.
+    CSS += `
+.dsh-flat.__ro_root{width:100%;max-width:720px;gap:14px;font-size:13px;line-height:1.65;color:var(--dsw-alias-label-primary);--flat-accent:var(--dsw-alias-state-business-primary,#3964fe);--flat-border:var(--dsw-alias-border-l2,#dce2eb)}
+.dsh-flat.__ro_root *{box-sizing:border-box;min-width:0}
+.dsh-flat.__ro_root p{margin:0}
+.dsh-flat.__ro_root label[class$="_field"]{gap:7px}
+.dsh-flat.__ro_root [class$="_label"]{font-size:13px;font-weight:500}
+.dsh-flat.__ro_root [class$="_hint"]{font-size:12px;line-height:1.65}
+.dsh-flat.__ro_root input:not([type=checkbox]),.dsh-flat.__ro_root select,.dsh-flat.__ro_root textarea{width:100%;border:1px solid var(--flat-border);border-radius:6px;background:var(--dsw-alias-bg-layer-3);color:inherit;font:inherit;padding:9px 12px;min-height:40px;box-shadow:none;transition:border-color .15s}
+.dsh-flat.__ro_root input:hover:not(:disabled),.dsh-flat.__ro_root select:hover:not(:disabled),.dsh-flat.__ro_root textarea:hover:not(:disabled){border-color:var(--dsw-alias-label-tertiary)}
+.dsh-flat.__ro_root input[type=checkbox]{appearance:none;flex:none;width:30px;height:18px;margin:0;border:1px solid var(--flat-border);border-radius:12px;background:var(--dsw-alias-bg-layer-2);position:relative;cursor:pointer;transition:background .15s,border-color .15s}
+.dsh-flat.__ro_root input[type=checkbox]::before{content:"";position:absolute;left:2px;top:2px;width:12px;height:12px;border-radius:50%;background:var(--dsw-alias-label-secondary);transition:transform .15s}
+.dsh-flat.__ro_root input[type=checkbox]:checked{background:var(--flat-accent);border-color:var(--flat-accent)}
+.dsh-flat.__ro_root input[type=checkbox]:checked::before{transform:translateX(12px);background:#fff}
+.dsh-flat.__ro_root :is(input,select,textarea,button,summary,a):focus-visible{outline:2px solid var(--flat-accent);outline-offset:3px}
+.dsh-flat.__ro_root :is(input,select,textarea,button):disabled{opacity:.5;cursor:default}
+.dsh-flat.__ro_root [class$="_actions"]{flex-wrap:wrap;gap:10px;margin-top:4px;padding-top:16px;border-top:1px solid var(--flat-border)}
+.dsh-flat.__ro_root details{border-top:1px solid var(--flat-border);padding:0}
+.dsh-flat.__ro_root summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;font-size:13px;font-weight:500;cursor:pointer;color:var(--dsw-alias-label-secondary)}
+.dsh-flat.__ro_root summary::-webkit-details-marker{display:none}
+.dsh-flat.__ro_root summary::after{content:"+";font-size:18px;font-weight:400;flex:none}
+.dsh-flat.__ro_root details[open]>summary::after{content:"−"}
+.dsh-flat.__ro_root details>div{padding-bottom:18px}
+.dsh-flat.__ro_root .__ro_field{display:flex;flex-direction:column;gap:7px}
+.dsh-flat.__ro_root .__ro_toggle{flex-direction:row;align-items:center;justify-content:space-between;padding:12px 0}
+.dsh-flat.__ro_root .__ro_advanced{display:flex;flex-direction:column;gap:18px}
+.dsh-flat.__ro_root .__ro_actions{display:flex;align-items:center}
+.dsh-flat.__ro_root .__ro_save{border:1px solid var(--flat-accent);background:var(--flat-accent);color:#fff;cursor:pointer}
+@media(prefers-reduced-motion:reduce){.dsh-flat.__ro_root *,.dsh-flat.__ro_root input[type=checkbox]::before{transition:none}}
+.dsh-flat.__ro_root button{border-radius:6px;min-height:34px;padding:7px 14px;font:inherit;font-size:12px;box-shadow:none}
+.dsh-flat.__ro_root :is(h2,h3){margin:0;font-size:14px;font-weight:600}
+`;
+    var tagId = "dsh-reasoning-options/main.css";
+    if (typeof document !== "undefined" && !document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]")) {
+      var tag = document.createElement("style");
+      tag.dataset.pluginCss = tagId;
+      tag.textContent = CSS;
+      document.head.appendChild(tag);
+    }
     var NS = "reasoningOptions";
     var zh = {
       enabled: "自动补齐模型推理档位",
@@ -70,26 +110,23 @@ window.__ModuleLoader__.load({
               setDraft(function (previous) { return Object.assign({}, previous, { [field.key]: next }); });
               setNotice(""); setError("");
             },
-            style: field.type === "checkbox" ? { accentColor: "var(--dsw-alias-state-business-primary)" } : {
-              padding: "10px 12px", borderRadius: 10, font: "inherit", color: "inherit",
-              border: "1px solid var(--dsw-alias-border-l2)", background: "var(--dsw-alias-bg-layer-3)"
-            }
+            className: "__ro_input"
           };
           if (field.type === "checkbox") input.checked = Boolean(current);
           else { input.value = current ?? ""; if (field.type === "number") { input.min = 0; input.step = 1; } }
-          return h("label", { key: field.key, style: { display: "flex", flexDirection: field.type === "checkbox" ? "row" : "column", gap: 10 } },
+          return h("label", { key: field.key, className: "__ro_field" + (field.type === "checkbox" ? " __ro_toggle" : "") },
             h("span", null, t(field.key)), h("input", input));
       }
-      return h("div", { style: { maxWidth: 640, display: "flex", flexDirection: "column", gap: 20 } },
+      return h("div", { className: "__ro_root dsh-flat", style: { display: "flex", flexDirection: "column" } },
         h("p", { style: { color: "var(--dsw-alias-label-secondary)" } }, t("intro")),
         renderField(FIELDS[0]),
         h("p", { style: { color: "var(--dsw-alias-label-secondary)", margin: 0 } }, t("defaultsHint")),
         h("details", null,
-          h("summary", { style: { cursor: "pointer" } }, t("advanced")),
-          h("div", { style: { display: "flex", flexDirection: "column", gap: 16, paddingTop: 16 } }, FIELDS.slice(1).map(renderField))),
-        h("div", { style: { display: "flex", gap: 12, alignItems: "center" } },
+          h("summary", { className: "__ro_summary" }, t("advanced")),
+          h("div", { className: "__ro_advanced" }, FIELDS.slice(1).map(renderField))),
+        h("div", { className: "__ro_actions" },
           h("button", { type: "button", onClick: save, disabled: busy || !snapshot.writable || !Object.keys(draft).length,
-            style: { padding: "8px 16px", borderRadius: 10, border: 0, background: "var(--dsw-alias-label-primary)", color: "var(--dsw-alias-bg-layer-1)", font: "inherit" }
+            className: "__ro_save"
           }, t(busy ? "saving" : "save")),
           notice ? h("span", { role: "status" }, notice) : null,
           error ? h("span", { role: "alert" }, error) : null));
