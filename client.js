@@ -46,6 +46,7 @@ window.__ModuleLoader__.load({
     }
     var NS = "reasoningOptions";
     var zh = {
+      routeDefaults: "路由默认推理强度", default: "Default（不注入推理强度）", defaultHint: "选择 Default 会清除该路由的默认推理强度，恢复 DSH 原生默认选项。已有会话若选过强度，请在模型菜单重新选择 Default。",
       enabled: "自动补齐模型推理档位",
       autoSessionHeader: "自动为 OpenCode 网关注入会话标识头",
       sessionHeaderValue: "会话标识",
@@ -57,6 +58,7 @@ window.__ModuleLoader__.load({
       unavailable: "插件配置尚未加载", error: "保存失败，请检查配置后重试"
     };
     var en = {
+      routeDefaults: "Default reasoning effort by provider", default: "Default (omit reasoning effort)", defaultHint: "Default clears this provider's configured effort and restores the native DSH default. Select Default again in the model menu for sessions with an explicit effort.",
       enabled: "Add missing model reasoning levels",
       autoSessionHeader: "Add session headers for OpenCode gateways",
       sessionHeaderValue: "Session identifier",
@@ -73,6 +75,28 @@ window.__ModuleLoader__.load({
       { key: "sessionHeaderValue", type: "text" },
       { key: "pollIntervalMs", type: "number" }
     ];
+
+    function ProviderDefaults(props) {
+      var scope = props.scope, t = props.t;
+      var [snapshot, setSnapshot] = react.useState(function () { return scope.getSnapshot(); });
+      var [busy, setBusy] = react.useState(false);
+      var [error, setError] = react.useState(false);
+      react.useEffect(function () {
+        setSnapshot(scope.getSnapshot());
+        return scope.subscribe(function () { setSnapshot(scope.getSnapshot()); });
+      }, [scope]);
+      if (snapshot.status !== "ready") return null;
+      return h("section", { className: "__ro_advanced" }, h("h3", null, t("routeDefaults")), h("p", null, t("defaultHint")),
+        Object.entries(snapshot.value.providers || {}).map(function (entry) {
+          return h("label", { key: entry[0], className: "__ro_field" }, h("span", null, entry[1].displayName || entry[0]),
+            h("select", { value: entry[1].reasoning || "default", disabled: busy || !snapshot.writable, onChange: function (event) {
+              var value = event.target.value;
+              var op = value === "default" ? { op: "unset", path: ["providers", entry[0], "reasoning"] } : { op: "set", path: ["providers", entry[0], "reasoning"], value: value };
+              setBusy(true); setError(false);
+              Promise.resolve().then(function () { return scope.mutate([op], snapshot.revision); }).then(function (ok) { setSnapshot(scope.getSnapshot()); setError(!ok); }).catch(function () { setError(true); }).finally(function () { setBusy(false); });
+            } }, ["default", "off", "minimal", "low", "medium", "high", "xhigh", "max"].map(function (level) { return h("option", { key: level, value: level }, level === "default" ? t("default") : level); })));
+        }), error ? h("p", { role: "alert" }, t("error")) : null);
+    }
 
     function ReasoningPage(props) {
       useLocale(props.locale);
@@ -130,7 +154,8 @@ window.__ModuleLoader__.load({
             className: "__ro_save"
           }, t(busy ? "saving" : "save")),
           notice ? h("span", { role: "status" }, messageText(t, notice)) : null,
-          error ? h("span", { role: "alert" }, messageText(t, error)) : null));
+          error ? h("span", { role: "alert" }, messageText(t, error)) : null),
+        h(ProviderDefaults, { scope: props.providerScope, t: t }));
     }
 
 
@@ -151,9 +176,10 @@ window.__ModuleLoader__.load({
     function apply(ctx) {
       ctx.effect(function () { return ctx.locale.register(NS, { zh: zh, en: en }); }, "dsh-reasoning-options: dictionaries");
       var scope = ctx.configForms.get("reasoning-efforts"), t = ctx.locale.bind(NS);
+      var providerScope = ctx.configForms.get("llm-pi-ai");
       ctx.slots.inject("plugins.bundle.config", function () {
         return ctx.slots.register({ name: "plugins.bundle.config", key: "dsh-reasoning-options", locale: NS }, function (props) {
-          return h(ReasoningPage, Object.assign({}, props, { scope: scope, t: t, locale: ctx.locale }));
+          return h(ReasoningPage, Object.assign({}, props, { scope: scope, providerScope: providerScope, t: t, locale: ctx.locale }));
         });
       });
     }

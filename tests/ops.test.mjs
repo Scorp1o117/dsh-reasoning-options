@@ -43,7 +43,7 @@ const FULL = { off: null, minimal: 'minimal', low: 'low', medium: 'medium', high
 const next = buildPatchedSection(section)
 assert.ok(next !== null, 'a patch should be produced')
 assert.ok(next !== section, 'should not mutate the input reference')
-assert.equal(next.providers.opencodego.reasoning, 'high', 'route default high added')
+assert.equal(next.providers.opencodego.reasoning, undefined, 'native Default remains available')
 assert.deepEqual(next.providers.opencodego.headers, { 'x-opencode-session': 'dsh-session' }, 'auto-injects x-opencode-session for opencode.ai')
 assert.deepEqual(next.providers.opencodego.models[0].reasoningEfforts, FULL, 'model 0 gets full efforts')
 assert.deepEqual(next.providers.opencodego.models[1], section.providers.opencodego.models[1], 'model 1 untouched')
@@ -67,8 +67,8 @@ const sectionWithCustomHeader = {
   },
 }
 const nextCustom = buildPatchedSection(sectionWithCustomHeader)
-assert.equal(nextCustom.providers.opencodego.headers['x-opencode-session'], 'my-custom-id', 'existing session header preserved')
-assert.equal(nextCustom.providers.opencodego.headers.other, 'val', 'existing sibling headers preserved')
+assert.equal(nextCustom, null, 'custom header already present and no route default is injected')
+assert.equal(sectionWithCustomHeader.providers.opencodego.headers.other, 'val', 'sibling header is preserved')
 
 // test case-insensitive existing header detection
 const sectionWithCaseVariant = {

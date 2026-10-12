@@ -12,8 +12,8 @@
 // This plugin closes that gap by writing the declaration itself: it reads the
 // `llm-pi-ai` user section and, for every model that does not already declare
 // `reasoningEfforts`, writes back the same section with the full level set
-// (off → max) added, plus a route-level `reasoning: high` default where a
-// route declares none. The write goes through the normal settings pipeline
+// (off → max) added. Route defaults are left untouched so DSH can offer
+// its native Default choice. The write goes through the normal settings pipeline
 // (schema-validated by pi-ai, persisted to the profile patch document,
 // hot-committed), so dsh's own machinery — UI picker, request dispatch — does
 // the rest. No adapter internals are touched.
@@ -59,9 +59,6 @@ const NS = "reasoning-efforts";
 
 /** The namespace whose models we augment (owned by dsh-llm-pi-ai). */
 const TARGET_NS = "llm-pi-ai";
-
-/** Route-level default reasoning level applied when a route declares none. */
-const DEFAULT_ROUTE_LEVEL = "high";
 
 /** All selectable levels, escalation order (matches pi-ai THINKING_LEVELS). */
 const LEVELS = ["off", "minimal", "low", "medium", "high", "xhigh", "max"];
@@ -147,11 +144,8 @@ export function buildPatchedSection(section, options = {}) {
       continue;
     }
     const nextProfile = { ...profile };
-    // Route-level default reasoning level (only when the route sets none).
-    if (nextProfile.reasoning === undefined || nextProfile.reasoning === null || nextProfile.reasoning === "") {
-      nextProfile.reasoning = DEFAULT_ROUTE_LEVEL;
-      changed = true;
-    }
+    // Leave the route default absent: DSH then offers its native Default choice
+    // and the adapter omits the reasoning option from requests.
     // Auto-inject x-opencode-session header for OpenCode Go gateways where missing.
     if (autoSessionHeader && isOpenCode(nextProfile) && !hasSessionHeader(nextProfile.headers)) {
       nextProfile.headers = {

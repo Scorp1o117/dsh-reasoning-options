@@ -13,7 +13,7 @@ test('the installed plugin opens its own configuration from the Plugins page',()
   assert.ok(page,'community configuration must use the bundle configuration slot');
   assert.equal(page.options.key,manifest.name,'the key must match the installed npm bundle');
   assert.equal(entries.some(entry=>entry.options.name==='settings.section'),false,'configuration must not remain in global settings');
-  assert.equal(bindings.length,1,'one shared form owns the namespace revision');
+  assert.deepEqual(bindings, ['reasoning-efforts', 'llm-pi-ai'], 'route defaults use their owning namespace');
   const node=page.render({view:'page',t:key=>key});assert.equal(typeof node.type,'function');assert.equal(node.props.scope,scope);
   if(manifest.name==='dsh-soul-md')assert.ok(entries.some(entry=>entry.options.id==='soul-md-persona'),'retain the conversation persona switcher');
   assert.ok(manifest.files.includes('client.js'));assert.equal(manifest.dsh.client.platform,'web');

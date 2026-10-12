@@ -1,84 +1,28 @@
 # dsh-reasoning-options
 
-插件跟随 DSH 的语言设置（DSH 0.2.0-rc.2 内置中文和 English），配置页面、状态提示和插件列表名称/简介同步切换。扩展语言使用宿主的回退链。切换语言保留未保存的设置，无需单独选择插件语言。
+为自定义 pi-ai 模型补齐七档推理强度，保留 DSH 原生 **Default / 服务商默认**。Default 不发送推理强度参数；服务商仍可能按自身默认设置思考。
 
-## 配置入口（DSH 0.2.0-rc.2 起）
+支持 DSH 0.2.0-rc.2 及后续 0.2.x 的 Web、Desktop。使用 Desktop 提供的 dsh 命令（应用 → 管理 dsh 命令）安装：
 
-在首页侧边栏打开 **插件 → 已安装 → dsh-reasoning-options**，直接在插件详情页配置并保存。配置页注册到官方的 `plugins.bundle.config` 接口；全局设置页不再重复显示配置入口。Web 与桌面版使用相同界面，本版要求 DSH 0.2.0-rc.2 或更新的 0.2.x 版本。现有配置无需迁移。
-
-主页面只显示自动补齐推理档位的开关；需要调整 OpenCode 会话标识头或检查间隔时再展开 **高级设置**。已有配置保留，保存只写入编辑过的字段。
-
-**GitHub**: [Scorp1o117/dsh-reasoning-options](https://github.com/Scorp1o117/dsh-reasoning-options) · **npm**: [dsh-reasoning-options](https://www.npmjs.com/package/dsh-reasoning-options) · [English](README.md)
-
-给 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 的 **pi-ai 自定义模型（第三方网关）** 自动补上「推理强度」选择器，并**自动注入必需的网关路由 Header**（如 OpenCode Go 的 `x-opencode-session`）。
-
-## 为什么需要它
-
-1. **推理强度选框缺失**：dsh 自带的 DeepSeek 模型在 Web UI 里有推理强度选项（off / low / high / max …），因为 DeepSeek 适配器为模型声明了 reasoning 能力。但通过 `llm-pi-ai` 配置的第三方网关模型（OpenCode Go、GOAT、火山方舟等）**默认没有这个选项**——pi-ai 只给「显式声明了 `reasoningEfforts`」的模型提供档位 UI，手工在 profile patch（`cordis.patch.yml`）里声明的模型都不会声明它。
-2. **OpenCode Go 网关兼容**：OpenCode Go 网关（`opencode.ai/zen/go/v1`）强制要求请求携带 `x-opencode-session` HTTP Header 用于请求分发与 Prompt Cache。缺少时会直接报错 `400: {"type":"MissingSessionID", ...}`。
-
-本插件一并解决上述问题：扫描 `llm-pi-ai` 命名空间，给**每个没有 `reasoningEfforts` 的模型**写入全七档声明（off / minimal / low / medium / high / xhigh / max），给没设默认档位的 provider 加上 `reasoning: high`，并为 OpenCode Go provider 自动注入缺失的 `x-opencode-session` Header。写入走 dsh 原生 settings 管线（schema 校验 → 落盘 profile patch → 热生效）——**用户完全不用手动改文件**。
-
-> 只负责「给用户一个更方便的选择入口」并保证网关连通性。具体选哪档、模型支不支持，由用户自己决定，插件不判断模型适配度。
-
-## 桌面端安装
-
-在桌面端的“插件”页面安装，或使用桌面端“应用 → 管理 dsh 命令”注册的命令：
-
-```powershell
-dsh plugin --profile desktop add dsh-reasoning-options@0.3.1
+```sh
+dsh plugin --profile desktop add dsh-reasoning-options@0.5.0
 ```
 
-重启桌面端以加载客户端插件。配置位于 `$DSH_HOME/profiles/desktop`。
+Web 使用 `--profile web`。安装更新后重启 DSH，在 **插件 → 已安装 → dsh-reasoning-options** 打开配置页。
 
+## Default 与旧配置
 
-## 兼容性（v0.3.1）
+新版不再自动写入路由的 `reasoning: high`。未配置默认强度的路由会显示 DSH 原生 Default，以及 off、minimal、low、medium、high、xhigh、max。不会把字符串 `default` 发给适配器或模型。
 
-已在 DSH `0.1.7-rc.2`（Web）与 `0.2.0-rc.2`（桌面端运行时）的一次性 Profile 验证。桌面端使用独立的 `desktop` Profile；其他预发布版本暂未验证。
+旧版本已经配置过路由强度时，在插件设置的路由下拉框选择 **Default（不注入推理强度）**。该操作通过带版本校验的 unset 清除对应路由的 reasoning，不修改其它路由。用户已有的默认强度不会在升级时自动删除。如果会话曾经显式选过强度，还需在会话模型菜单重新选择 Default。
 
-## 安装
+保留自定义 reasoningEfforts 和显式 reasoningEfforts: false。显式七档是否被模型支持取决于服务商。
 
-```powershell
-dsh plugin --profile web add dsh-reasoning-options
-```
+## 其它设置
 
-或手动在 profile patch 挂载：
+- enabled：自动补齐档位，默认开启。
+- autoSessionHeader：为 HTTP(S) opencode.ai 及其子域补齐 x-opencode-session，默认开启。
+- sessionHeaderValue：默认 dsh-session，保留已有 Header。
+- pollIntervalMs：默认 30000 毫秒，0 关闭定期检查。
 
-```yaml
-- insert:
-    - id: reasoning-efforts
-      name: 'dsh-reasoning-options'
-      config:
-        enabled: true
-```
-
-## 工作原理
-
-1. 读取 `llm-pi-ai` 命名空间当前的**用户层**配置（`settings.describe()` 每次都会现读 profile patch 文件）。
-2. 对每个 provider 的每个模型：若没有 `reasoningEfforts`，生成对应变更，写入全七档声明。
-3. 对没设 `reasoning` 默认档的 provider 路由，补 `reasoning: high`。
-4. 对 HTTP(S) OpenCode Go provider（URL 主机名为 `opencode.ai` 或其子域名），若缺少 session header 则自动注入 `headers: { x-opencode-session: 'dsh-session' }`。路径、查询参数或用户名中出现该字符串不会触发注入；已有 Header 保持原样。
-5. 所有写入经 pi-ai 自己的 schema 校验后持久化并热提交，dsh 原生 UI/请求链路随即生效。
-6. **幂等 + 串行**：已有档位和已配置 Header 的项目不碰；补完后再扫描是空操作，不会反复写。同一时刻只跑一次扫描，多次触发不会互相抢配置文件锁。
-7. **触发时机**：`settings/document-updated`（在 Web UI 里改模型）、`app-boot/config-reload`，以及每 `pollIntervalMs` 一次的兜底扫描。事件只置脏标记，真正的写入由插件自己的定时器上下文执行——因为 dsh 是在热重载事务**内部**发出设置变更事件的，而在该事务里再发起一次写入会被直接拒绝（`HMR transactions cannot be nested`）。
-
-## 配置
-
-| 字段 | 默认 | 含义 |
-|---|---|---|
-| `enabled` | `true` | 设为 `false` 停止自动处理 |
-| `autoSessionHeader` | `true` | 是否自动为 `opencode.ai` 网关注入 `x-opencode-session` |
-| `sessionHeaderValue` | `'dsh-session'` | 自动注入的 `x-opencode-session` 默认值 |
-| `pollIntervalMs` | `30000` | 兜底重扫周期（毫秒）；`0` 关闭轮询，只响应事件 |
-
-> 想改默认档位或 wire 值？补丁写入后它们就在 `cordis.patch.yml` 的 `llm-pi-ai` 段里，可随时手动调整，插件不会覆盖已有声明。
-
-## 注意事项
-
-- 插件**读取并改写 `llm-pi-ai` 命名空间**，但**不拥有**它（pi-ai 独占注册）。所有写入都走公开的 `settings.update` API，与在 Web UI 手改等效。
-- 数组是整体替换，所以插件每次写入都会重述它触碰到的 provider 的完整 `models` 列表；写入时带上读取到的 revision，若期间该命名空间被别处改过就冲突重试而不是覆盖并发编辑者。
-- 插件写入的是 profile patch 中 `llm-pi-ai` 条目的 `config`，这一段会被整段重写（段内的 YAML 注释会丢失）。
-- **手工编辑 `cordis.patch.yml` 新增模型后不必重启 dsh**：下一次轮询（默认 30 秒内）会补齐档位，并顺带让新模型热生效。把 `pollIntervalMs` 调小可缩短这个延迟。
-- 档位 wire 值为 OpenAI 兼容风格（`low`/`medium`/`high`/…）。绝大多数 OpenAI 兼容网关接受；个别网关若只认自己的写法，可在 `cordis.patch.yml` 里把对应模型的档位值改成它的写法。
-
-配置页可设置自动补齐推理档位、自动会话标识头、会话标识值和检查间隔；保存后宿主按现有配置生命周期生效。
+通过原生设置 API 写入，校验 revision、重试冲突，并在 HMR 事务外执行。中英文跟随 DSH 语言设置。运行 npm test 验证。

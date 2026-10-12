@@ -35,7 +35,7 @@ test('index.js does not import removed dsh-settings module exports', () => {
 
 test('target namespace + default level constants present', () => {
   assert.match(source, /const TARGET_NS = "llm-pi-ai"/);
-  assert.match(source, /const DEFAULT_ROUTE_LEVEL = "high"/);
+  assert.doesNotMatch(source, /nextProfile\.reasoning\s*=/);
   for (const level of ['off', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max']) {
     assert.ok(source.includes(`"${level}"`) || source.includes(`${level}:`), `mentions level ${level}`);
   }
