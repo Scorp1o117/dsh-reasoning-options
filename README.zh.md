@@ -1,5 +1,9 @@
 # dsh-reasoning-options
 
+## DSH 0.2.1-rc.2
+
+适配 DSH 0.2.1-rc.2，明确声明该预发布版本的 engines.dsh 与 peer 范围。宿主新增 DeepSeek V4.1 Flash 1017 及 Search/Fetch API，本插件使用的接口保持不变。保留已有推理配置及自动补齐显式开启策略。
+
 ## DSH 0.2.1-rc.1
 
 DSH 0.2.1-rc.1 已内置自定义模型推理档位编辑。自动补齐改为显式开启（`augmentReasoning` 默认 false），避免重新开启在原生模型设置中关闭的推理。已有档位和路由默认强度保留；OpenCode 会话头及带 revision 校验的路由 Default 辅助继续可用。旧宿主如需自动补齐，可在高级设置主动开启。
