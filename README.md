@@ -1,11 +1,15 @@
 # dsh-reasoning-options
 
-Adds seven explicit reasoning levels to custom pi-ai models while retaining DSH's native **Default / Provider default** choice. Default sends no reasoning effort; it does not turn thinking off at the provider.
+## DSH 0.2.1-rc.1
+
+DSH 0.2.1-rc.1 includes a native editor for custom-model reasoning levels. Automatic augmentation is now opt-in (`augmentReasoning: false` by default), so turning reasoning off in Models stays off. Existing declarations and provider defaults are retained. OpenCode headers and the revision-checked provider Default helper remain available. On older hosts, opt in to augmentation to restore automatic filling.
+
+Optionally adds seven explicit reasoning levels to custom pi-ai models while retaining DSH's native **Default / Provider default** choice. Default sends no reasoning effort; it does not turn thinking off at the provider.
 
 Requires DSH 0.2.0-rc.2 or later 0.2.x, on Web and Desktop. Install with the Desktop-provided dsh command (Application → Manage dsh Command):
 
 ```sh
-dsh plugin --profile desktop add dsh-reasoning-options@0.5.0
+dsh plugin --profile desktop add dsh-reasoning-options@0.6.0
 ```
 
 Use `--profile web` for Web. Restart DSH after package changes. Open **Plugins → Installed → dsh-reasoning-options** to configure it.
@@ -20,7 +24,8 @@ Existing custom effort declarations and `reasoningEfforts: false` are retained. 
 
 ## Other settings
 
-- `enabled` (true): add missing model declarations.
+- `enabled` (true): enable gateway helpers.
+- `augmentReasoning` (false): opt in to filling missing declarations; this overrides turning reasoning off in the native editor.
 - `autoSessionHeader` (true): add a missing x-opencode-session header for HTTP(S) opencode.ai and its subdomains.
 - `sessionHeaderValue` (dsh-session): header value; existing headers are preserved.
 - `pollIntervalMs` (30000): fallback rescan interval; 0 disables periodic rescans.

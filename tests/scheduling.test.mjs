@@ -100,7 +100,7 @@ test('a write carries the revision it was planned from', async () => {
     describe: () => [{ ns: 'llm-pi-ai', revision: 7, user: sectionWith('mimo-v2.6-pro') }],
     update: async (ns, patch, revision) => { sent = { ns, patch, revision } },
   }
-  assert.equal(await reconcile(settings, null), 1)
+  assert.equal(await reconcile(settings, null, { augmentReasoning: true }), 1)
   assert.equal(sent.revision, 7, 'optimistic concurrency token passed through')
   assert.deepEqual(sent.patch.providers.opencodego.models[0].reasoningEfforts, FULL)
 })
@@ -121,7 +121,7 @@ test('a namespace that moved mid-pass is re-read, not overwritten', async () => 
       if (calls < 2) throw conflict
     },
   }
-  assert.equal(await reconcile(settings, null), 1)
+  assert.equal(await reconcile(settings, null, { augmentReasoning: true }), 1)
   assert.equal(writes.length, 2, 'conflict retried once with a fresh read')
   assert.equal(writes[0].revision, 0)
   assert.equal(writes[1].revision, 1, 'retry plans from the moved namespace')
@@ -144,6 +144,6 @@ test('a refused write is reported once and does not loop', async () => {
 test('a missing target namespace is a silent no-op', async () => {
   let calls = 0
   const settings = { describe: () => [], update: async () => { calls += 1 } }
-  assert.equal(await reconcile(settings, null), 0)
+  assert.equal(await reconcile(settings, null, { augmentReasoning: true }), 0)
   assert.equal(calls, 0, 'nothing to read, nothing written')
 })

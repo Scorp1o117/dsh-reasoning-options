@@ -1,7 +1,7 @@
 {
   "name": "dsh-reasoning-options",
-  "version": "0.5.0",
-  "description": "Reasoning levels and native Default (no injected effort) for DSH Web and Desktop.",
+  "version": "0.6.0",
+  "description": "OpenCode gateway headers, provider Default helpers, and optional reasoning augmentation for DSH.",
   "type": "module",
   "main": "index.js",
   "exports": {
@@ -15,7 +15,7 @@
       "patch": "./cordis.patch.yml"
     },
     "compatibility": {
-      "dsh": ">=0.2.0-rc.2 <0.3.0",
+      "dsh": ">=0.2.0-rc.2 <0.3.0 || 0.2.1-rc.1",
       "dshReleases": {
         "0.1.5-rc.2": "incompatible",
         "0.1.5-rc.3": "incompatible",
@@ -25,7 +25,8 @@
         "0.1.7-alpha.2": "unknown",
         "0.1.7-rc.1": "incompatible",
         "0.1.7-rc.2": "incompatible",
-        "0.2.0-rc.2": "compatible"
+        "0.2.0-rc.2": "compatible",
+        "0.2.1-rc.1": "compatible"
       },
       "node": ">=20.18",
       "profiles": [
@@ -59,7 +60,8 @@
   ],
   "license": "MIT",
   "engines": {
-    "node": ">=20.18"
+    "node": ">=20.18",
+    "dsh": ">=0.2.0-rc.2 <0.3.0 || 0.2.1-rc.1"
   },
   "repository": {
     "type": "git",
@@ -69,10 +71,10 @@
     "url": "https://github.com/Scorp1o117/dsh-reasoning-options/issues"
   },
   "scripts": {
-    "test": "node tests/settings-scope-compat.test.mjs && node tests/ops.test.mjs && node --test tests/scheduling.test.mjs && node --test tests/plugin-page.test.mjs tests/client-write-flow.test.mjs && node --test tests/locale.test.mjs"
+    "test": "node tests/settings-scope-compat.test.mjs && node tests/ops.test.mjs && node --test tests/scheduling.test.mjs && node --test tests/plugin-page.test.mjs tests/client-write-flow.test.mjs && node --test tests/locale.test.mjs && node --test tests/native-reasoning.test.mjs"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-settings": ">=0.2.0-rc.2 <0.3.0",
+    "@deepseek-ai/dsh-settings": ">=0.2.0-rc.2 <0.3.0 || 0.2.1-rc.1",
     "react": "^18.2.0"
   },
   "dependencies": {

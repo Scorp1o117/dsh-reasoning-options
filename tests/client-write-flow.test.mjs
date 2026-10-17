@@ -75,5 +75,14 @@ test('only the main switch is outside the collapsed advanced settings', () => {
   assert.equal(advanced.props.open, undefined);
   assert.equal(input(advanced, 'enabled'), undefined);
   assert.ok(input(advanced, 'sessionHeaderValue'));
+  assert.equal(input(advanced, 'augmentReasoning').props.checked, false);
   assert.ok(input(tree, 'enabled'));
+});
+
+test('augmentation requires an explicit saved choice and leaves gateway settings alone', async () => {
+  const ui = mount(true);
+  input(ui.render(), 'augmentReasoning').props.onChange({ target: { checked: true } });
+  save(ui.render()).props.onClick(); await settle();
+  assert.deepEqual(ui.writes[0].ops, [{ op: 'set', path: ['augmentReasoning'], value: true }]);
+  assert.equal(ui.snapshot().value.autoSessionHeader, true);
 });

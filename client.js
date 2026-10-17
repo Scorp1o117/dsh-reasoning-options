@@ -47,30 +47,33 @@ window.__ModuleLoader__.load({
     var NS = "reasoningOptions";
     var zh = {
       routeDefaults: "路由默认推理强度", default: "Default（不注入推理强度）", defaultHint: "选择 Default 会清除该路由的默认推理强度，恢复 DSH 原生默认选项。已有会话若选过强度，请在模型菜单重新选择 Default。",
-      enabled: "自动补齐模型推理档位",
+      enabled: "启用网关辅助",
+      augmentReasoning: "自动补齐缺失推理档位（可选，会重新开启模型推理）",
       autoSessionHeader: "自动为 OpenCode 网关注入会话标识头",
       sessionHeaderValue: "会话标识",
       pollIntervalMs: "自动检查间隔（毫秒，0 表示关闭定时检查）",
-      intro: "为自定义模型补齐推理强度选项，并为 OpenCode 网关补齐会话标识。",
+      intro: "DSH 0.2.1 已内置模型推理档位编辑，请在模型设置中配置。此插件保留 OpenCode 会话标识与路由 Default 辅助。",
       advanced: "高级设置：网关与检查间隔",
-      defaultsHint: "开启后自动工作；通常无需调整下方参数。",
+      defaultsHint: "默认不修改模型推理档位；高级设置中的自动补齐会覆盖原生编辑器关闭推理的操作。已有档位及路由强度保持不变。",
       save: "保存", saving: "保存中…", saved: "已保存",
       unavailable: "插件配置尚未加载", error: "保存失败，请检查配置后重试"
     };
     var en = {
       routeDefaults: "Default reasoning effort by provider", default: "Default (omit reasoning effort)", defaultHint: "Default clears this provider's configured effort and restores the native DSH default. Select Default again in the model menu for sessions with an explicit effort.",
-      enabled: "Add missing model reasoning levels",
+      enabled: "Enable gateway helpers",
+      augmentReasoning: "Fill missing reasoning levels (optional; re-enables model reasoning)",
       autoSessionHeader: "Add session headers for OpenCode gateways",
       sessionHeaderValue: "Session identifier",
       pollIntervalMs: "Automatic check interval (ms; 0 disables periodic checks)",
-      intro: "Add reasoning levels to custom models and session headers to OpenCode gateways.",
+      intro: "DSH 0.2.1 includes a model reasoning editor. Configure levels in Models; this plugin retains OpenCode headers and provider Default helpers.",
       advanced: "Advanced: gateways and check interval",
-      defaultsHint: "Works automatically when enabled; the defaults usually need no changes.",
+      defaultsHint: "Model levels are left unchanged by default. Optional automatic augmentation overrides turning reasoning off in the native editor. Existing levels and route efforts are preserved.",
       save: "Save", saving: "Saving…", saved: "Saved",
       unavailable: "Plugin configuration is not loaded", error: "Save failed; check the configuration and retry"
     };
     var FIELDS = [
       { key: "enabled", type: "checkbox" },
+      { key: "augmentReasoning", type: "checkbox" },
       { key: "autoSessionHeader", type: "checkbox" },
       { key: "sessionHeaderValue", type: "text" },
       { key: "pollIntervalMs", type: "number" }

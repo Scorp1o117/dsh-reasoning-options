@@ -1,5 +1,4 @@
-// dsh-reasoning-options — give every custom pi-ai model a reasoning-effort
-// selector.
+// dsh-reasoning-options — gateway headers and opt-in reasoning augmentation.
 //
 // dsh's own DeepSeek adapter advertises reasoning levels for its models, so
 // the Web UI shows a reasoning-effort picker. The pi-ai adapter (third-party
@@ -9,7 +8,9 @@
 // ...) therefore get no picker, and any explicit effort is rejected inside
 // the adapter (`UNSUPPORTED_REASONING_EFFORT`).
 //
-// This plugin closes that gap by writing the declaration itself: it reads the
+// DSH 0.2.1 includes a native reasoning editor. Automatic augmentation is off
+// by default so removing a declaration there stays effective. When explicitly
+// enabled, this plugin writes missing declarations: it reads the
 // `llm-pi-ai` user section and, for every model that does not already declare
 // `reasoningEfforts`, writes back the same section with the full level set
 // (off → max) added. Route defaults are left untouched so DSH can offer
@@ -92,6 +93,7 @@ import z from "@deepseek-ai/schemastery";
 /** Runtime schema for the reasoning-efforts row. */
 const Config = z.object({
   enabled: z.boolean().default(true),
+  augmentReasoning: z.boolean().default(false),
   autoSessionHeader: z.boolean().default(true),
   sessionHeaderValue: z.string().default("dsh-session"),
   pollIntervalMs: z.natural().default(DEFAULT_POLL_INTERVAL_MS),
@@ -126,7 +128,7 @@ export function hasSessionHeader(headers) {
  * reference when nothing would change), never mutates `section`.
  *
  * @param {any} section - the raw USER section (`settings.section("llm-pi-ai")`).
- * @param {object} [options] - configuration options (autoSessionHeader, sessionHeaderValue).
+ * @param {object} [options] - augmentReasoning (opt-in), autoSessionHeader, sessionHeaderValue.
  * @returns {object|null} the complete next section when a change is needed,
  *   or `null` when everything already declares reasoning and headers.
  */
@@ -155,7 +157,9 @@ export function buildPatchedSection(section, options = {}) {
       changed = true;
     }
     const models = nextProfile.models;
-    if (Array.isArray(models)) {
+    // The native model editor removes reasoningEfforts when its switch is off.
+    // Filling absent declarations must therefore be an explicit opt-in.
+    if (options.augmentReasoning === true && Array.isArray(models)) {
       const nextModels = models.map((model) => {
         if (!model || typeof model !== "object" || hasEfforts(model)) return model;
         if (model.reasoningEfforts === false) return model; // explicitly non-reasoning

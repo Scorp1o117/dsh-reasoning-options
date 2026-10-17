@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "推理选项",
-    "description": "补齐推理档位，支持 Default 不注入推理强度及路由默认设置。"
+    "description": "OpenCode 会话头及路由 Default 辅助；可选补齐推理档位，默认尊重原生模型设置。"
   }
 }

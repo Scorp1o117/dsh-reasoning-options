@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "Reasoning options",
-    "description": "Reasoning levels with native Default and provider route controls."
+    "description": "OpenCode headers and provider Default helpers, with opt-in reasoning augmentation. Native model settings take precedence by default."
   }
 }

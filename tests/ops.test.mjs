@@ -1,6 +1,8 @@
 // exercise buildPatchedSection against a representative llm-pi-ai user section
 import assert from 'node:assert/strict'
-import { buildPatchedSection, reconcile, isOpenCode } from '../index.js'
+import { buildPatchedSection as plan, reconcile, isOpenCode } from '../index.js'
+// Exercise the legacy augmentation only when explicitly requested.
+const buildPatchedSection = (section, options = {}) => plan(section, { augmentReasoning: true, ...options })
 
 for (const baseURL of ['https://opencode.ai/v1', 'https://API.OpenCode.ai:443/v1', 'https://opencode.ai./v1']) {
   assert.equal(isOpenCode({ baseURL }), true, baseURL)
@@ -113,6 +115,6 @@ const settings = {
   describe: () => [{ ns: 'llm-pi-ai', user: section }],
   update: async (ns, patch) => { written = { ns, patch } },
 }
-assert.equal(await reconcile(settings, null), 1)
+assert.equal(await reconcile(settings, null, { augmentReasoning: true }), 1)
 assert.equal(written.ns, 'llm-pi-ai')
 assert.deepEqual(written.patch.providers.opencodego.models[0].reasoningEfforts, FULL)
