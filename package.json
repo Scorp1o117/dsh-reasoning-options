@@ -1,6 +1,6 @@
 {
   "name": "dsh-reasoning-options",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "OpenCode gateway headers, provider Default helpers, and optional reasoning augmentation for DSH.",
   "type": "module",
   "main": "index.js",
@@ -15,7 +15,7 @@
       "patch": "./cordis.patch.yml"
     },
     "compatibility": {
-      "dsh": ">=0.2.0-rc.2 <0.3.0 || 0.2.1-rc.1 || 0.2.1-rc.2",
+      "dsh": ">=0.2.0-rc.2 <0.3.0 || 0.2.1-rc.1 || 0.2.1-rc.2 || 0.2.1-rc.3",
       "dshReleases": {
         "0.1.5-rc.2": "incompatible",
         "0.1.5-rc.3": "incompatible",
@@ -27,7 +27,8 @@
         "0.1.7-rc.2": "incompatible",
         "0.2.0-rc.2": "compatible",
         "0.2.1-rc.1": "compatible",
-        "0.2.1-rc.2": "compatible"
+        "0.2.1-rc.2": "compatible",
+        "0.2.1-rc.3": "compatible"
       },
       "node": ">=20.18",
       "profiles": [
@@ -62,7 +63,7 @@
   "license": "MIT",
   "engines": {
     "node": ">=20.18",
-    "dsh": ">=0.2.0-rc.2 <0.3.0 || 0.2.1-rc.1 || 0.2.1-rc.2"
+    "dsh": ">=0.2.0-rc.2 <0.3.0 || 0.2.1-rc.1 || 0.2.1-rc.2 || 0.2.1-rc.3"
   },
   "repository": {
     "type": "git",
@@ -75,7 +76,7 @@
     "test": "node tests/settings-scope-compat.test.mjs && node tests/ops.test.mjs && node --test tests/scheduling.test.mjs && node --test tests/plugin-page.test.mjs tests/client-write-flow.test.mjs && node --test tests/locale.test.mjs && node --test tests/native-reasoning.test.mjs"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-settings": ">=0.2.0-rc.2 <0.3.0 || 0.2.1-rc.1 || 0.2.1-rc.2",
+    "@deepseek-ai/dsh-settings": ">=0.2.0-rc.2 <0.3.0 || 0.2.1-rc.1 || 0.2.1-rc.2 || 0.2.1-rc.3",
     "react": "^18.2.0"
   },
   "dependencies": {
