@@ -22,7 +22,7 @@ test('manifest records verified DSH latest and next without claiming alpha', () 
 test('peer deps target the new DSH settings API', () => {
   for (const [name, range] of Object.entries(manifest.peerDependencies)) {
     if (!name.startsWith('@deepseek-ai/')) continue;
-    assert.equal(range, '>=0.2.0-rc.2 <0.3.0 || 0.2.1-rc.1 || 0.2.1-rc.2 || 0.2.1-rc.3');
+    assert.equal(range, '>=0.2.0-rc.2 <0.3.0 || 0.2.1-rc.1 || 0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4 || 0.2.1-rc.5');
   }
 });
 
