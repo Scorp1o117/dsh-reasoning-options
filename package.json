@@ -1,6 +1,6 @@
 {
   "name": "dsh-reasoning-options",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "description": "OpenCode gateway headers, provider Default helpers, and optional reasoning augmentation for DSH.",
   "type": "module",
   "main": "index.js",
@@ -15,7 +15,7 @@
       "patch": "./cordis.patch.yml"
     },
     "compatibility": {
-      "dsh": ">=0.2.0-rc.2 <0.3.0 || 0.2.1-rc.1 || 0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4 || 0.2.1-rc.5 || 0.2.2-rc.1 || 0.2.2-rc.2",
+      "dsh": ">=0.2.0-rc.2 || >=0.2.1-rc.1 || >=0.2.2-rc.1",
       "dshReleases": {
         "0.1.5-rc.2": "incompatible",
         "0.1.5-rc.3": "incompatible",
@@ -67,7 +67,7 @@
   "license": "MIT",
   "engines": {
     "node": ">=20.18",
-    "dsh": ">=0.2.0-rc.2 <0.3.0 || 0.2.1-rc.1 || 0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4 || 0.2.1-rc.5 || 0.2.2-rc.1 || 0.2.2-rc.2"
+    "dsh": ">=0.2.0-rc.2 || >=0.2.1-rc.1 || >=0.2.2-rc.1"
   },
   "repository": {
     "type": "git",
@@ -83,7 +83,7 @@
     "@deepseek-ai/dsh-settings": "0.2.2-rc.2"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-settings": ">=0.2.0-rc.2 <0.3.0 || 0.2.1-rc.1 || 0.2.1-rc.2 || 0.2.1-rc.3 || 0.2.1-rc.4 || 0.2.1-rc.5 || 0.2.2-rc.1 || 0.2.2-rc.2",
+    "@deepseek-ai/dsh-settings": ">=0.2.0-rc.2 || >=0.2.1-rc.1 || >=0.2.2-rc.1",
     "react": "^18.2.0"
   },
   "dependencies": {
